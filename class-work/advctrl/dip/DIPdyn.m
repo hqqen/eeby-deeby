@@ -1,0 +1,78 @@
+clear all;
+%symbolc dynamics script for double inverted pendulum
+%assumptions
+%- mass (and MoI) is concentrated at leg end
+%- each leg angle (tht1, tht2) is independently measued from the vertical
+%- both joints have indepedent control inputs (tau1, tau2)
+
+%set desired point to linearize about
+qDes = [pi/4; 0];
+dqDes = [0; 0];
+tauDes = [1; 1]; %might be unneeded - no feedthrough effects
+
+%define symvars
+syms tht1 tht2 dtht1 dtht2 I1 I2 k1 k2 a1 a2 m1 m2 tau1 real
+q = [tht1; tht2]; dq = [dtht1; dtht2];
+x = [q; dq];
+tau = [tau1; 0];
+
+%define system kinetic and potential energy, along with link end heights
+%for finding PE
+T = .5*I1*dtht1^2 + .5*I2*(dtht2 + dtht1)^2;% + m2*a2*a1*dtht1*(dtht1+dtht2)*cos(tht2);
+h1 = -a1*cos(tht1);
+h2 = -a1*cos(tht1) - a2*cos(tht2 + tht1);
+V = m1*h1 + m2*h2 + .5*k1*tht1^2 + .5*k2*(tht2)^2;
+
+%get gravity vector
+G = jacobian(V,q).';
+fprintf("Gravity Vector Found! \n ")
+
+%get inertia matrix
+% M = zeros(max(size(dq)),max(size(dq)));
+for i = 1:max(size(dq))
+    for j = 1:max(size(dq))
+        M(i,j) = jacobian(jacobian(T,dq(i)),dq(j));
+    end
+end
+fprintf("Inertia Matrix Found! \n ")
+
+n = max(size(q));
+for k = 1:n
+    for j = 1:n
+        C(k,j) = 0*a1;
+        for i = 1:n
+            C(k,j)=C(k,j)+1/2*(diff(M(k,j),q(i)) + ...
+				diff(M(k,i),q(j)) - ...
+				diff(M(i,j),q(k)))*dq(i);
+        end
+    end
+end
+C = simplify(C);
+fprintf("Coriolis Matrix Found! \n ")
+
+% find system lqr to check gains
+% doesnt work with the extended formulation in symbolics
+ddx = [dq;...
+       M\([tau1;0] - C*dq - G)];
+A2 = jacobian(ddx,x);
+B2 = jacobian(ddx,tau1);
+C2 = jacobian(x,x);
+D2 = jacobian(x,tau1);
+fprintf("System Matrices Found! \n ");
+
+[I1,I2,m1,m2,a1,a2,k1,k2] = getVars();
+tht1 = qDes(1); tht2 = qDes(2);
+dtht1 = dqDes(1); dtht2 = dqDes(2);
+tau1 = tauDes(1); tau2 = tauDes(2);
+A2 = double(subs(A2));
+B2 = double(subs(B2));
+C2 = double(subs(C2));
+D2 = double(subs(D2));
+fprintf("System Matrix Substitution Done!\n");
+% sys = ss(A2,B2,C2,D2);
+% Q = eye(4);
+% fprintf("LQR Gains Found to BE:\n");
+% lqr(sys,Q,1)
+
+matlabFunction(M,C,G,T,V,"file","getDynamicsGenerated")
+save('getLinearizedSystem','A2','B2',"C2","D2")
