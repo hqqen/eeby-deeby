@@ -135,7 +135,7 @@ classdef Robot
             tau = tauGrav + tauStraighten + tauHip;
 
             %member stiffness and damping apply to both leg curvatures
-            ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] + G); %shouldnt G be negative here? ----%#%@%$^
+            ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] - G); %shouldnt G be negative here? ----%#%@%$^
             dx = [dq;ddq]; 
         end
 
