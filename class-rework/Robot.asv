@@ -1,11 +1,11 @@
 classdef Robot
     %UNTITLED Summary of this class goes here
     %   Detailedexplanation goes here
-
+    
     properties
         %initialize an at rest robot
-        %         q = [0;0;0;0]; %[qSt, thtSt, qSw, thtSw]
-        %         dq = [0;0;0;0]; %[dqSt, dthtSt, dqSw, dthtSw]
+%         q = [0;0;0;0]; %[qSt, thtSt, qSw, thtSw]
+%         dq = [0;0;0;0]; %[dqSt, dthtSt, dqSw, dthtSw]
         p = [0;0]; %want to initialize swing foot for any arbitrary state @ origin
         %x = [q;dq]; %unneeded; state gets passed out by methods which will build the outgoing state OTF
         dynFlag = 0;
@@ -16,34 +16,34 @@ classdef Robot
         R = eye(4);
         tol = 1e-5;
     end
-
+    
     methods
 
-        %         function [M,C,G,E,PE,KE] = doStep(Robot,q,dq)
-        %             %find xdot (dx) for current step by solving the modified E-L
-        %             %equation, also functions as a dynamics listener if more than
-        %             %one output is specified
-        %             %returns dx
-        %             %want to take in the q and dq (given as x) from integrator, but
-        %             %use the stance foot posn of the robot due to how ode45 works
-        %             if Robot.dynFlag == 0
-        %                 if nargout == 2
-        %                     fprintf("Listening to Controller Input...")
-        %                     Robot.dynFlag = 1;
-        %                 elseif nargout > 2
-        %                     fprintf("Listening to Dynamics...")
-        %                     Robot.dynFlag = 1;
-        %                 else
-        %                     fprintf("Only Reporting dx...")
-        %                     Robot.dynFlag = 1;
-        %                 end
-        %             end
-        %             if Robot.isFix == 0
-        %                 Robot.isFix = 1;
-        %
-        %             end
-        %             [M,C,G,E,PE,KE] = Robot.getDyns(q,dq,Robot.p);
-        %         end
+%         function [M,C,G,E,PE,KE] = doStep(Robot,q,dq)
+%             %find xdot (dx) for current step by solving the modified E-L
+%             %equation, also functions as a dynamics listener if more than
+%             %one output is specified
+%             %returns dx
+%             %want to take in the q and dq (given as x) from integrator, but
+%             %use the stance foot posn of the robot due to how ode45 works
+%             if Robot.dynFlag == 0
+%                 if nargout == 2
+%                     fprintf("Listening to Controller Input...")
+%                     Robot.dynFlag = 1;
+%                 elseif nargout > 2
+%                     fprintf("Listening to Dynamics...")
+%                     Robot.dynFlag = 1;
+%                 else
+%                     fprintf("Only Reporting dx...")
+%                     Robot.dynFlag = 1;
+%                 end
+%             end
+%             if Robot.isFix == 0
+%                 Robot.isFix = 1;
+% 
+%             end
+%             [M,C,G,E,PE,KE] = Robot.getDyns(q,dq,Robot.p);
+%         end
 
         function h = getHeight(Robot,q)
             [~,~,xSw,ySw] = Robot.getSwingFootPos(q); %use integrator made q for this
@@ -61,36 +61,36 @@ classdef Robot
             n = max(size(q));
             [Me,E2,dGamma] = Robot.getImpactDyns(q,dq,Robot.p);
             [~,~,xSw,ySw] = Robot.getSwingFootPos(q);
-            %             R = [0 0 1 -1;...
-            %                  0 0 0 1;
-            %                  1 1 0 0;
-            %                  0 1 0 0];
-            %             R = [0 0 -1 0;...
-            %                  0 0 0 -1;
-            %                  -1 0 0 0;
-            %                  0 -1 0 0];
+%             R = [0 0 1 -1;...
+%                  0 0 0 1;
+%                  1 1 0 0;
+%                  0 1 0 0];
+%             R = [0 0 -1 0;...
+%                  0 0 0 -1;
+%                  -1 0 0 0;
+%                  0 -1 0 0];
 
             dqPlus = inv(-E2*inv(Me)*E2.');
             dqPlus = (Me\(E2.'*dqPlus));
             dqPlus = dqPlus*E2*[eye(n);dGamma];
             dqPlus = dqPlus + [eye(n);dGamma];
             dqPlus = [Robot.R, zeros(n,2)]*dqPlus*dq.';
-
+            
             Robot.p = [xSw;ySw];
             xPlus = [Robot.R*q.'; dqPlus]; %put foot coords back in
-
+            
             %have the new state, need to rearrange:
             yStar = xPlus;
             y = [...
-                yStar(3); %new stance leg curvature is old swing leg curvature
+                yStar(3); %new stance leg curvature is old swing leg curvature 
                 yStar(4) + pi; %new stance leg base angle is old swing leg base angle w/offset
-                yStar(1); %new swing leg curvature is old stance leg curvature
+            	yStar(1); %new swing leg curvature is old stance leg curvature
                 yStar(2) - pi; %new swing leg base angle is old stance leg base angle w/offset
                 yStar(7); %new stance leg curvature RoC is old swing leg curvature RoC
                 yStar(8); %new stance leg base angle RoC is old swing leg base angle RoC w/o an offset
                 yStar(5); %new swing leg curvature RoC is old stance leg curavture RoC
                 yStar(6)]; %new swing leg base angle RoC is old stance leg base angle RoC w/o an offset
-            %             y = xPlus;
+%             y = xPlus;
         end
 
         function dx = doCtrl(Robot,t,x)
@@ -118,17 +118,7 @@ classdef Robot
             %picks frm a library of conrollers to get tau
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
             [M,C,G,~,~,~] = Robot.getDynsSpring(q,dq,Robot.p);
-            tau = Robot.getTau(M,C,G,q,dq);
-
-            %member stiffness and damping apply to both leg curvatures
-            ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] + G); %shouldnt G be negative here? ----%#%@%$^
-            dx = [dq;ddq];
-        end
-
-        function tau = getTau(M,C,G,q,dq)
-            %picks frm a library of conrollers to get tau
-            [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
-            qDes = pi/24; %put in getvars
+            qDes = pi/24;
             %build control input
             %build slope correcting group action
             %only applies to base angles (doing this to curvatures would
@@ -143,11 +133,17 @@ classdef Robot
             [~, lffh, lglfh, ~] = Robot.getLieDeriv(q,dq,M,C,G);
             tauHip = lglfh\lffh;%lglfh\(Robot.getPsi(x(1:4),x(5:8)) - lffh);
             tau = tauGrav + tauStraighten + tauHip;
+
+            %member stiffness and damping apply to both leg curvatures
+            ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] + G); %shouldnt G be negative here? ----%#%@%$^
+            dx = [dq;ddq]; 
         end
 
-        function [lfh, lffh, lglfh, psi] = getLieDeriv(Robot,q,dq,M,C,G)
-            [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
+        function tau = getTau(M,C,G,q,dq)
 
+                function [lfh, lffh, lglfh, psi] = getLieDeriv(Robot,q,dq,M,C,G)
+            [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
+            
             %TODO: convert into function call (not done here b/c objective
             %function is simple enough to turn both derivatives into
             %constant matrices)
@@ -160,28 +156,28 @@ classdef Robot
             psi = Robot.getPsi(h,lfh);%dh <--> lfh
 
         end
-
+    
         function [h,dh,dhdq,d2hdq2] = getObjFunc(Robot,q,dq)
             %calculates objective function h for tracking
-            %additionally returns first time derivative dhdt and (1st & 2nd)
+            %additionally returns first time derivative dhdt and (1st & 2nd) 
             %state derivatives dhdq and d2hdq2
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
 
             %find objective function at current state
             h = [q(1) - tht0des;...
-                q(1) - q(3)];
+                 q(1) - q(3)];
 
             %find first and second derivs w/r.t. state vars
             %constant matrices for now, but will get more complex as
             %objective function does
             dhdq = [1, 0, 0, 0;...
-                1, 0, -1, 0];
+                    1, 0, -1, 0];
             d2hdq2 = [0, 0, 0, 0;...
-                0, 0, 0, 0];
+                      0, 0, 0, 0];
 
             %find first time deriv
             dh = [dq(1);...
-                -dq(1) + dq(3)];
+                  -dq(1) + dq(3)];
         end
 
         function [psi] = getPsi(Robot,x,dx)
@@ -190,10 +186,10 @@ classdef Robot
             %ctrlrs
             x1 = x(1); x2 = x(2); dx1 = dx(1); dx2 = dx(2);
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
-
+            
             psi = (1/epsilon^2) * [...
-                x1 + (-alpha + .5)*sign(epsilon*dx1)*abs(epsilon*dx1)^(2-alpha);
-                x2 + (-alpha + .5)*sign(epsilon*dx2)*abs(epsilon*dx2)^(2-alpha)];
+                   x1 + (-alpha + .5)*sign(epsilon*dx1)*abs(epsilon*dx1)^(2-alpha);
+                   x2 + (-alpha + .5)*sign(epsilon*dx2)*abs(epsilon*dx2)^(2-alpha)];
 
         end
 
@@ -227,7 +223,7 @@ classdef Robot
                 for i = 1:max(size(y))
                     fig = Robot.drawSelf(y(i,:),f,t(i)); drawnow;
                 end
-            else
+            else 
                 for i = 1:max(size(y))
                     fig = Robot.drawSelfFixedCam(y(i,:),f,t(i)); drawnow;
                 end
@@ -272,7 +268,7 @@ classdef Robot
 
             %plot the biped
             figure(f); hold off; %we're animating on this, forcibly wipe it while drawing the biped
-            plot([stanceLegX hipX],[stanceLegY hipY],'b-'); hold on;
+            plot([stanceLegX hipX],[stanceLegY hipY],'b-'); hold on; 
             ylim([hipY - 1, hipY + 1]); xlim([hipX - 1, hipX + 1]); %center plot on hip, makin sure it has a window big eough to stop limbs from leaving
             plot([hipX swingLegX], [hipY swingLegY],'r-');
             plot(xSw,ySw,'k*'); %plot separately calc'd foot position to check for issues
@@ -287,7 +283,7 @@ classdef Robot
             %return a picture of the robotcs configuration at time t on
             %axes f
             %this version of the function fixes the robot w/in the window
-            %(in particular, the stance foot at (0,0)) to stop weid perspective effects from changing how it's moving
+            %(in particular, the stance foot at (0,0)) to stop weid perspective effects from changing how it's moving 
 
             if ~exist('f','var')
                 %if not given axes, make a set of them way outside what
@@ -321,7 +317,7 @@ classdef Robot
 
             %plot the biped
             figure(f); hold off; %we're animating on this, forcibly wipe it while drawing the biped
-            plot([stanceLegX hipX],[stanceLegY hipY],'b-'); hold on;
+            plot([stanceLegX hipX],[stanceLegY hipY],'b-'); hold on; 
             ylim([-1 1]); xlim([-1 1]); %center plot on hip, makin sure it has a window big eough to stop limbs from leaving
             plot([hipX swingLegX], [hipY swingLegY],'r-');
             plot(xSw,ySw,'k*'); %plot separately calc'd foot position to check for issues
@@ -329,7 +325,7 @@ classdef Robot
             plot(Robot.world.groundPointsX,Robot.world.groundPointsY); %plot ground
             fig = gcf;
         end
-
+        
         function [Gphi] = doGroupAction(Robot,q,dq)
             [~,~,xSw,~] = getSwingFootPos(Robot,q);
             phi = Robot.world.getSlope(xSw);
@@ -340,11 +336,11 @@ classdef Robot
 
         function [dxSw,dySw,xSw,ySw] = getSwingFootPos(Robot,q)
             %helper function to return swing foot velocity and position for impact detection
-
+            
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
             q0 = q(1); tht0 = q(2); q1 = q(3); tht1 = q(4);
             footX = Robot.p(1); footY = Robot.p(2); d = 0;
-
+            
             t2 = cos(tht0);
             t3 = cos(tht1);
             t4 = sin(tht0);
@@ -391,20 +387,20 @@ classdef Robot
         function [Me,E2,dGamma] = getImpactDyns(Robot,q,dq,p)
             %helper function to numerically calculate extended inertia matrix Me for
             %impact mapping
-
+            
             q0 = q(1); tht0 = q(2); q1 = q(3); tht1 = q(4);
             dq0 = dq(1); dtht0 = dq(2); dq1 = dq(3); dtht1 = dq(4);
             footX = p(1); footY = p(2); d = 0;
-
+            
             % fprintf("q:\n"); disp(q);
             % fprintf("\ndq:\n"); disp(dq);
             % fprintf("\nqo:\n"); disp(q0);
             % fprintf("\ntht:\n"); disp(tht);
             % fprintf("\ndq0:\n"); disp(dq0);
             % fprintf("\ndtht:\n"); disp(dtht);
-
+            
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars(); d = 0;
-
+            
             t2 = cos(q0);
             t3 = cos(q1);
             t4 = cos(tht0);
@@ -620,19 +616,19 @@ classdef Robot
             %helper function to numerically calculate dynamics matrices M (inertia), C
             %(coriolis) and G (gravity) given state vector q and its derivatives along
             %with hip pos'n vector p
-
+            
             q0 = q(1); tht0 = q(2); q1 = q(3); tht1 = q(4);
             dq0 = dq(1); dtht0 = dq(2); dq1 = dq(3); dtht1 = dq(4);
             footX = p(1); footY = p(2);
-
-
+            
+            
             % fprintf("q:\n"); disp(q);
             % fprintf("\ndq:\n"); disp(dq);
             % fprintf("\nqo:\n"); disp(q0);
             % fprintf("\ntht:\n"); disp(tht);
             % fprintf("\ndq0:\n"); disp(dq0);
             % fprintf("\ndtht:\n"); disp(dtht);
-
+            
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
 
             t2 = cos(phi);
@@ -914,7 +910,7 @@ classdef Robot
             dq0 = dq(1); dtht0 = dq(2); dq1 = dq(3); dtht1 = dq(4);
             footX = p(1); footY = p(2);
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
-
+            
             t2 = cos(phi);
             t3 = cos(q0);
             t4 = cos(q1);
@@ -1194,7 +1190,7 @@ classdef Robot
                 KE = t246+t248+t250+t252;
             end
         end
-
+        
         function [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = getVars(Robot)
             %helper function; returns state vars for computations elsewhere
             %D - arm width
@@ -1202,7 +1198,7 @@ classdef Robot
             %g - |gravity|
             %m - linkage mass (by section?)
             %phi - g field angle from negative vertical, ccw
-
+            
             D = .1;
             L = 1;
             g = 9.81;
@@ -1219,22 +1215,22 @@ classdef Robot
             epsilon = .1;
             tht0des = pi/4;
         end
-
+   
         function drawStates(Robot,y,t,ye,te)
             %should find a better way of sanitizing this
             q = y(:,1:4); dq = y(:,5:8);
             figure("Name","State Space Curves","Position",[0 250 500 500]);
             subplot(2,2,1); hold on; title("Member Curvatures");
-            plot(q(:,1),q(:,3));
+            plot(q(:,1),q(:,3)); 
             xlabel("q_{st}"); ylabel("q_{sw}");
             subplot(2,2,2); hold on; title("Member Curvature Derivatives");
-            plot(dq(:,1),dq(:,3));
+            plot(dq(:,1),dq(:,3)); 
             xlabel("dq_{st}"); ylabel("dq_{sw}");
             subplot(2,2,3); hold on; title("Base Angles");
-            plot(q(:,2),q(:,4));
+            plot(q(:,2),q(:,4)); 
             xlabel("\theta_{st}"); ylabel("\theta_{sw}");
             subplot(2,2,4); hold on; title("Base Angle Derivatives");
-            plot(dq(:,2),dq(:,4));
+            plot(dq(:,2),dq(:,4)); 
             xlabel("d\theta_{st}"); ylabel("d\theta_{sw}");
 
             figure("Name", "Time Evolution of System Parameters","Position",[0 0 1000 500]);
@@ -1263,7 +1259,7 @@ classdef Robot
             plot(t,dq(:,4));
             xlabel("t"); ylabel("d\theta_{st}");
         end
-
+    
         function drawHeight(Robot,y,t)
             figure("Name","Swing Foot Height")
             h = [];
@@ -1275,7 +1271,7 @@ classdef Robot
             title("Swing Foot Height")
             plot([0 t(end)],[0 0])
         end
-
+    
     end
 end
 
