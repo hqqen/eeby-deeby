@@ -18,10 +18,11 @@ rockTime = .1;
 
 %create the coordinate space of ICs to iterate over (kick the swing leg to start)
 dq = [0 0 0 .1].';
-q0Space = [.01, pi/20:pi/20:pi]; %20 points in [0,pi] (even π curvature is probably too high )
-tht0Space = 0:pi/40:pi/2;  %20 points in [0,pi/2] (anything greater than pi/2 corresponds to one leg starting up, less than zero is a leaning start)
-q1Space = [.01, pi/20:pi/20:pi]; %dont let q0 or q1 be zero, singularities
-tht1Space = 0:pi/40:pi/2;
+nPoints = 10;
+q0Space = [.01, pi/nPoints:pi/nPoints:pi]; %20 points in [0,pi] (even π curvature is probably too high )
+tht0Space = 0:pi/(2*nPoints):pi/2;  %20 points in [0,pi/2] (anything greater than pi/2 corresponds to one leg starting up, less than zero is a leaning start)
+q1Space = [.01, pi/nPoints:pi/nPoints:pi]; %dont let q0 or q1 be zero, singularities
+tht1Space = 0:pi/(2*nPoints):pi/2;
 qSpace = cell([max(size(q0Space)),max(size(tht0Space)),max(size(q1Space)),max(size(tht1Space))]);
 numPoints = max(size(q0Space))*max(size(tht0Space))*max(size(q1Space))*max(size(tht1Space));
 currPoint = 0;
