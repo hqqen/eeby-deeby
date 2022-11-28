@@ -6,26 +6,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main(): 
-    nTrain = 10
-    nEpoch = 100
-    tau = 5
-    alpha = .01
-    
+    nTrain = 2
     #initialize environment, train is and close it when done
     bot = gym.make('Acrobot-v1')
     #we want to average training preformance over multiple runs - initialize storage
-    ePlot = np.array(np.zeros(nEpoch))
-    rPlot = np.array(np.zeros(nEpoch))
+    ePlot = np.array([])
+    rPlot = np.array([])
     for i in range(nTrain):
-        e, r = policyGrad(bot, nEpoch = nEpoch, alpha = alpha, nSamples = tau)
+        e, r = policyGrad(bot)
         ePlot = ePlot + e
         rPlot = rPlot + r
-        print(i+1)
     #averge over number of training runs
-    ePlot = windowedAve(np.array(ePlot)/nTrain,1)
-    rPlot = windowedAve(np.array(rPlot)/nTrain,1)
-    
-    makePlots(alpha, tau, ePlot, rPlot)
+    ePlot = np.array(ePlot)/nTrain
+    rPlot = np.array(rPlot)/nTrain
     
     bot.close()
 
@@ -96,19 +89,18 @@ def policyGrad(env, nEpoch=100, alpha=0.01, nSamples=5,\
 
     #draw plots if flag is set
     if drawPlots:
-        makePlots(alpha, nSamples, epochs, rewards)
+        makePlots(env, alpha, nSamples, nSteps, epochs, rewards, weights)
     return epochs, rewards
 
 
-def makePlots(alpha, nSamples, epochs, rewards):
+def makePlots(env, alpha, nSamples, nSteps, epochs, rewards, weights):
     #given the same system parameters as the trainer, plot training results
 
     # Plot the rewards over epochs
     plt.plot(epochs, rewards)
-    plt.plot([epochs[0],epochs[-1]],[-100, -100],linestyle='dashed')
     plt.xlabel('nEpoch #')
     plt.ylabel('Average Reward')
-    plt.title(f'Window Averaged (windowSize = 1) Policy Gradient Training Performance w/α = {alpha},'\
+    plt.title(f'Policy Gradient Training Performance w/α = {alpha},'\
         f' τ = {nSamples} ')
     plt.show()
 
@@ -151,9 +143,9 @@ def windowedAve(x,n):
         nWindow = n
         windowSum = 0
         if i < n:
-            nWindow = i + 1
-        for j in range(0,nWindow): #zero is included, zero indexing means we dont need to add 1
-            windowSum += x[i-j] 
+            nWindow = i
+        for j in range(0,nWindow+1):
+            windowSum += x(i-j) 
         y[i] = windowSum/nWindow
     return y
 
