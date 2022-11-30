@@ -74,5 +74,5 @@ fprintf("System Matrix Substitution Done!\n");
 % fprintf("LQR Gains Found to BE:\n");
 % lqr(sys,Q,1)
 
-matlabFunction(M,C,G,T,V,"file","getDynamicsGenerated")
-save('getLinearizedSystem','A2','B2',"C2","D2")
+%matlabFunction(M,C,G,T,V,"file","getDynamicsGenerated")
+%save('getLinearizedSystem','A2','B2',"C2","D2")
