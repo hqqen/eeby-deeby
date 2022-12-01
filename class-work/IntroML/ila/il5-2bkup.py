@@ -184,9 +184,9 @@ class A2C:
                 std_rewards.append(std_reward)
                 print("-"*50)
 
-        np.save('experiments/'+ENV+'/'+ENV+'_total_rewards_'+exp_name+'.npy', total_rewards)
-        np.save('experiments/'+ENV+'/'+ENV+'_mean_rewards_'+exp_name+'.npy', mean_rewards)
-        np.save('experiments/'+ENV+'/'+ENV+'_std_rewards_'+exp_name+'.npy', std_rewards)
+        #np.save('experiments/'+ENV+'/'+ENV+'_total_rewards_'+exp_name+'.npy', total_rewards)
+        #np.save('experiments/'+ENV+'/'+ENV+'_mean_rewards_'+exp_name+'.npy', mean_rewards)
+        #np.save('experiments/'+ENV+'/'+ENV+'_std_rewards_'+exp_name+'.npy', std_rewards)
 
         self.env.close()
  
@@ -205,7 +205,7 @@ class A2C:
         return np.mean(testing_rewards), np.std(testing_rewards)
 
 
-    def demonstrate(self, save_snapshots=None):
+    def demonstrate(self):
         self.env = gym.make(self.envname)
         state = self.env.reset()
         while not done:
