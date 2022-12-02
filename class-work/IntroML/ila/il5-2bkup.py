@@ -21,7 +21,6 @@ MAX_EPISODES = 50000
 MAX_STEPS_PER_EP = 1000
 TEST_FREQUENCY = 5
 TEST_EPISODES = 2
-SAVE_FREQUENCY = 100
 GAMMA = 0.9           # discount factor
 LR = 1E-3             # Learning Rate
 N_HIDDEN = 128
@@ -184,10 +183,6 @@ class A2C:
                 std_rewards.append(std_reward)
                 print("-"*50)
 
-        #np.save('experiments/'+ENV+'/'+ENV+'_total_rewards_'+exp_name+'.npy', total_rewards)
-        #np.save('experiments/'+ENV+'/'+ENV+'_mean_rewards_'+exp_name+'.npy', mean_rewards)
-        #np.save('experiments/'+ENV+'/'+ENV+'_std_rewards_'+exp_name+'.npy', std_rewards)
-
         self.env.close()
  
     def test(self, num_episodes, train_episode):
@@ -213,33 +208,7 @@ class A2C:
             action, log_prob, value = self.select_action(state)
             state, reward, done, _ = self.env.step(action)
 
-    def save_experiment(self, environment):
-
-        path = "experiments/" + environment + "_a2c_" + exp_name
-
-        torch.save(self.ActorCritic.state_dict(), path)
-
-        # if you want to load the model, use something similar to the following
-        # network = actor()
-        # actor.load_state_dict(torch.load(file_path))
-
-        parameters = {
-            "Environment Name": self.envname,
-            "MAX_EPISODES":MAX_EPISODES,
-            "MAX_STEPS_PER_EP":MAX_STEPS_PER_EP,
-            "GAMMA":GAMMA,
-            "TAU":TAU,
-            "LEARNING_RATE_ACTOR":LR_ACTOR,
-            "LEARNING_RATE_CRITIC":LR_CRITIC,
-        }
-
-        parameters_path = "experiments/" + environment + "_a2c_"+exp_name+".csv"
-        with open(parameters_path, "w") as file:
-            w = csv.writer(file)
-            for key, val in parameters.items():
-                w.writerow([key, val, "\n"])
 
 if __name__ == "__main__":
     A2C = A2C(ENVIRONMENT)
     A2C.train()
-    # A2C.save_experiment(ENVIRONMENT)
