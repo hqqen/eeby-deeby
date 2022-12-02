@@ -1,214 +1,190 @@
 #Alex Beyer - ILA5 - Linear policy Gradients
+#implements linear policy gradients with a gaussian potential (i think?) via a NN using the Advatage Actor-Critic (A2C) Method
 
 #necessary imports
 import sklearn.preprocessing
 import numpy as np
-import random
 import time
 import gym
+import matplotlib.pyplot as plt
 
-from torch.autograd import Variable
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.nn as nn
 import torch
 
-import sys, time
-import argparse
-
-#set global parameters
-MAX_EPISODES = 50000
-MAX_STEPS_PER_EP = 1000
-TEST_FREQUENCY = 5
-TEST_EPISODES = 2
-GAMMA = 0.9           # discount factor
-LR = 1E-3             # Learning Rate
-N_HIDDEN = 128
-PRINT_DATA = 1        # how often to print data
-RENDER_GAME = False   # View the Episode. 
-
-ENVIRONMENT = "MountainCarContinuous-v0"
-ENV = 'MountainCar'
+import time
 
 #boilerplate setup
-#parser = argparse.ArgumentParser()
-#parser.add_argument('--v', type=str, default='1', help='Experiment Number')
-#opt = parser.parse_args()
-#exp_name = opt.v
 device = torch.device("cpu") #i ran this via CUDA but that throws errors for unsupported cards - change "cpu" to "cuda" to reenable
 
-######################################################################
-
-
-
+#plotter class with data storage for later
 class Plotter():
     def __init__(self):
         self.data = []
 
+#actor-critic agent
 class ActorCritic(nn.Module):
-    def __init__(self, state_size, action_size):
+    def __init__(self, nStates, nActions, nHidden = 16):
         super(ActorCritic, self).__init__()
-        self.action_size = action_size
-        self.layer1 = nn.Linear(state_size, N_HIDDEN)
-        self.layer2 = nn.Linear(N_HIDDEN, N_HIDDEN)
-        self.layer3 = nn.Linear(N_HIDDEN, action_size)
-        self.value = nn.Linear(N_HIDDEN, 1)
+        #build NN
+        self.nActions = nActions
+        self.layer1 = nn.Linear(nStates, nHidden)
+        self.layer2 = nn.Linear(nHidden, nHidden)
+        self.layer3 = nn.Linear(nHidden, nActions)
+        self.value = nn.Linear(nHidden, 1)
         self.to(device)
 
-
+    #forward pass - I'm trying a different way to build this than in the NN homework where I defined everything as part of the same network; here I have the activation functions separate and directly call each layer in the activation function
+    #personally I think this makes more sense but that's just how I think about the problem
+    #expirimented a bit and relu for all 3 layers gives some interesting properties; namely that it seems to be able to get a positive score - this score might be entirely artificial (I'm not sure the model can even score anything higher than 1 and even that might not be physically possible)
+    # but it still seems to correspond to great model preformance
     def forward(self, x):
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
-        mu = 2 * torch.tanh(self.layer3(x))
+        mu = F.relu(self.layer3(x)) #try different activators
         sigma = F.softmax(self.layer3(x), dim = -1) + 1E-5
-        n_output = self.action_size
-        distribution = torch.distributions.Normal(mu.view(self.action_size,).data, sigma.view(self.action_size,).data)
+        dist = torch.distributions.Normal(mu.view(self.nActions).data, sigma.view(self.nActions).data)
         value = self.value(x)
-        return distribution, value
+        return dist, value
 
-
+#build the A2C trainer as a class which calls the ActorCritic agent class in itself
 class A2C:
-    def __init__(self, envname):
+    def __init__(self, envName, gamma = .5, learnRate = .05, nEps = 100, nSteps = 100, nEpsTest = 10):
         
-        self.envname = envname
-        self.env = gym.make(envname)
+        self.envName = envName
+        self.env = gym.make(envName)
         self.model = ActorCritic(self.env.observation_space.shape[0], self.env.action_space.shape[0]).to(device)
-        self.optimizer = optim.Adam(self.model.parameters(),LR)
+        self.opt = optim.Adam(self.model.parameters(),learnRate)
 
         self.data = {"loss": []}
-        self.start_time = None
+        self.startTime = None
 
-    # Normalize / Standardize the inputs for faster model convergence. 
-    # Randomly generate oberservations and use them to train a scaler. 
-    # Referenced from - Reinforcement Learning Cookbook. 
-    def initialize_scale_state(self):
-        state_space_samples = np.array([self.env.observation_space.sample() for x in range(int(1E4))])
+        self.nEps = nEps
+        self.nEpsTest = nEpsTest
+        self.nSteps = nSteps
+        self.gamma = gamma
+
+    def initStateScaler(self):
+        ssSample = np.array([self.env.observation_space.sample() for x in range(10000)])
         self.scaler = sklearn.preprocessing.StandardScaler()
-        self.scaler.fit(state_space_samples)
+        self.scaler.fit(ssSample)
 
-    def scale_state(self, state):
+    def scaleState(self, state):
         scaled = self.scaler.transform(np.array([state[0]]).reshape(1,-1))
         return scaled[0]
 
-    def select_action(self, state):
+    def getNextAction(self, state):
         if type(state) is tuple:
             dist, value = self.model(torch.Tensor(state[0].reshape(1,-1))) 
         else:
             dist, value = self.model(torch.Tensor(state)) 
         action = dist.sample().numpy()
-        log_prob = dist.log_prob(torch.FloatTensor(action))
-        return action, log_prob, value
+        nextProb = dist.log_prob(torch.FloatTensor(action))
+        return action, nextProb, value
 
-    def update_a2c(self, rewards, log_probs, values, state):
+    def a2cUpdate(self, rewards, lProbs, values, state):
 
-        Qvals = []
-        Qval = 0
+        qVals = []
+        nextQ = 0
         pw = 0
         for reward in rewards[::-1]:
-            Qval += GAMMA ** pw * reward
+            nextQ += self.gamma ** pw * reward
             pw += 1
-            Qvals.append(Qval)
+            qVals.append(nextQ)
 
-        Qvals = Qvals[::-1]
-        Qvals = torch.tensor(Qvals)
-        Qvals = (Qvals - Qvals.mean()) / (Qvals.std() + 1e-5)
+        qVals = qVals[::-1]
+        qVals = torch.tensor(qVals)
+        qVals = (qVals - qVals.mean()) / (qVals.std() + 1e-5)
 
         loss = 0
-        for log_prob, value, Qval in zip(log_probs, values, Qvals):
+        for nextProb, value, nextQ in zip(lProbs, values, qVals):
 
-            advantage = Qval - value.item()
-            actor_loss = -log_prob * advantage
-            critic_loss = F.smooth_l1_loss(value[0], Qval)
-            loss += critic_loss + actor_loss
+            advantage = nextQ - value.item()
+            actorLoss = -nextProb * advantage
+            criticLoss = F.smooth_l1_loss(value[0], nextQ)
+            loss += criticLoss + actorLoss
 
-        self.optimizer.zero_grad()
+        self.opt.zero_grad()
         loss.min().backward()  
-        self.optimizer.step()
-
+        self.opt.step()
 
     # Main training loop.
     def train(self):
 
         score = 0.0
-        total_rewards = []
-        mean_rewards = []
-        std_rewards = []
+        rewards = []
+        muRewards = []
+        sigmaRewards = []
         
-        self.initialize_scale_state()
+        self.initStateScaler()
 
-        print("Going to be training for a total of {} episodes".format(MAX_EPISODES))
-        self.start_time = time.time()
-        for e in range(MAX_EPISODES):
+        self.startTime = time.time()
+        for e in range(self.nEps):
             state = self.env.reset()
             score = 0.0
-            step_num = 0
+            stepNum = 0
 
             rewards = []
-            log_probs = []
+            lProbs = []
             values = []
 
-            for t in range(MAX_STEPS_PER_EP):
+            for t in range(self.nSteps):
                 
-                step_num += 1
-
-                if RENDER_GAME and (e+1) % 25 ==0:
-                    self.env.render()
+                stepNum += 1
 
                 if type(state) is tuple:
-                    state = self.scale_state(state[0].reshape(1,-1))
+                    state = self.scaleState(state[0].reshape(1,-1))
                 else:
-                    state = self.scale_state(state.reshape(1,-1))
-                action, log_prob, value = self.select_action(state)
+                    state = self.scaleState(state.reshape(1,-1))
+                action, nextProb, value = self.getNextAction(state)
                 state, reward, truncated, terminated, _ = self.env.step(action)
                 score += reward
                 rewards.append(reward)
                 values.append(value)
-                log_probs.append(log_prob)
+                lProbs.append(nextProb)
                 if truncated or terminated:
                     break
 
-            total_rewards.append(score)
+            rewards.append(score)
 
              # Update Actor - Critic 
-            self.update_a2c(rewards, log_probs, values, state)
+            self.a2cUpdate(rewards, lProbs, values, state)
 
-            if (e+1) % PRINT_DATA == 0:
-                print("Episode: {}, reward: {}, steps: {}".format(e+1, total_rewards[e], step_num))
+            if (e+1) % 2 == 0:
+                print("ep {} got reward: {} in {} steps ".format(e+1, rewards[e], stepNum))
 
-            if (e+1) % TEST_FREQUENCY == 0:
-                print("-"*10 + " testing now " + "-"*10)
-                mean_reward, std_reward = self.test(TEST_EPISODES,e)
-                print('Mean Reward Achieved : {} \nStandard Deviation : {}'.format(mean_reward, std_reward))
-                mean_rewards.append(mean_reward)
-                std_rewards.append(std_reward)
-                print("-"*50)
+            if (e+1) % 10 == 0:
+                nextMuReward, nextSigmaReward = self.test(self.nEpsTest,e)   
+                print('ave reward: {} \n w/stdev: {}'.format(nextMuReward, nextSigmaReward))
+
+            nextMuReward, nextSigmaReward = self.test(self.nEpsTest,e)
+            muRewards.append(nextMuReward)
+            sigmaRewards.append(nextSigmaReward)
+
 
         self.env.close()
+        return rewards, lProbs, values, muRewards, sigmaRewards
  
-    def test(self, num_episodes, train_episode):
-        testing_rewards = []
-        for e in range(TEST_EPISODES):
+    def test(self, nEps, tEp):
+        testReward = []
+        for e in range(self.nEpsTest):
             state = self.env.reset()
-            temp_reward = []
-            for t in range(MAX_STEPS_PER_EP):
-                action, _, _ = self.select_action(state)
+            nextReward = []
+            for t in range(self.nSteps):
+                action, _, _ = self.getNextAction(state)
                 _, reward, truncated, terminated, _ = self.env.step(action)
-                temp_reward.append(reward)
+                nextReward.append(reward)
                 if truncated or terminated:
                     break
-            testing_rewards.append(sum(temp_reward))
-        return np.mean(testing_rewards), np.std(testing_rewards)
-
-
-    def demonstrate(self):
-        self.env = gym.make(self.envname)
-        state = self.env.reset()
-        while not done:
-            self.env.render()
-            action, log_prob, value = self.select_action(state)
-            state, reward, done, _ = self.env.step(action)
-
+            testReward.append(sum(nextReward))
+        return np.mean(testReward), np.std(testReward)
 
 if __name__ == "__main__":
-    A2C = A2C(ENVIRONMENT)
-    A2C.train()
+    A2C = A2C("MountainCarContinuous-v0")
+    rewards, lProbs, values, muRewards, sigmaRewards = A2C.train()
+    plt.plot(muRewards) #final element is the mean reward and shouldn't be plotted with the others
+    plt.xlabel("Episode")
+    plt.ylabel("Average Reward")
+    plt.title("Average Reward by Episode")
+    plt.show()
