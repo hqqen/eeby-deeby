@@ -149,7 +149,7 @@ class A2C:
                 if RENDER_GAME and (e+1) % 25 ==0:
                     self.env.render()
 
-                state = self.scale_state(state.reshape(1,-1))
+                state = self.scale_state(state)
                 action, log_prob, value = self.select_action(state)
                 state, reward, truncated, terminated, _ = self.env.step(action)
                 score += reward
