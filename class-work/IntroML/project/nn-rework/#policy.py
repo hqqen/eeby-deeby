@@ -39,11 +39,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical
-from policy import Policy
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
 env = gym.make('Acrobot-v1')
-env.seed(0)
 print('observation space:', env.observation_space)
 print('action space:', env.action_space)
 
@@ -91,7 +89,6 @@ scores = reinforce()
 #render
 import gym
 import time
-from policy import Policy
 import torch
 from gym.wrappers.monitoring.video_recorder import VideoRecorder
 
