@@ -14,7 +14,7 @@ classdef Robot
         world = ""; %what worldspace the robot is operating in
         B %input mapping for running feedback control
         R = eye(4);
-        tol = 1e-5;
+        tol = 1e-3;
     end
 
     methods
@@ -52,8 +52,16 @@ classdef Robot
 
         function [h, isterminal, direction] = isImpact(Robot,t,y)
             isterminal = 1;
-            direction = 1;
-            h = (Robot.getHeight(y(1:4)) < 0); %ode45 can't interpolate a function call like this
+            direction = -1;
+            %add condition here to check for swing foot being right of
+            %stance foot (forcibly stop rocking)
+            [~,~,xSw,ySw] = Robot.getSwingFootPos(y);
+            if xSw > Robot.p(1)
+                h = ySw;
+            else
+                h = inf;
+            end
+            %h = (Robot.getHeight(y(1:4)) < 0); %ode45 can't interpolate a function call like this
         end
 
         function y = doImpact(Robot,q,dq)
@@ -125,7 +133,7 @@ classdef Robot
             dx = [dq;ddq];
         end
 
-        function tau = getTau(M,C,G,q,dq)
+        function tau = getTau(Robot,M,C,G,q,dq)
             %picks frm a library of conrollers to get tau
             [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
             qDes = pi/24; %put in getvars
@@ -139,7 +147,7 @@ classdef Robot
             tauStraighten = [-kd*dq(1) - kp*(q(1)-qDes);0; -kd*dq(3) - kp*(q(1)+qDes);0]; %note that q3 is given the oppsotie qDes from q1
             %build rigid gait input
             %we've corrected for slope and straightened our legs, use
-            %motion at the hip to generate teh gait itself
+            %motion at the hip to generate the gait itself
             [~, lffh, lglfh, ~] = Robot.getLieDeriv(q,dq,M,C,G);
             tauHip = lglfh\lffh;%lglfh\(Robot.getPsi(x(1:4),x(5:8)) - lffh);
             tau = tauGrav + tauStraighten + tauHip;
@@ -181,7 +189,7 @@ classdef Robot
 
             %find first time deriv
             dh = [dq(1);...
-                -dq(1) + dq(3)];
+                 dq(1) + dq(3)];
         end
 
         function [psi] = getPsi(Robot,x,dx)

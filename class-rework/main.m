@@ -8,7 +8,7 @@ biped = Robot;
 % biped.q = [pi/96; 0; pi/24; -pi]; biped.dq = [1; 1.6; 1; -1.6];
 biped.world = simWorld;
 biped.B = [0 0 0 0; 0 1 0 0; 0 0 0 0; 0 0 0 1];
-q0 = [pi/12; pi/12; pi/4; pi/2]; dq0 = [0;0;0;.1];%[1; -1.6; 1; -1.6];
+q0 = [pi/12; pi/12; pi/16; pi/2]; dq0 = [0;0;0;.1];%[1; -1.6; 1; -1.6];
 
 %def sim parameters
 nSteps = 10; yS = [q0;dq0].'; yeS = []; tS = [0]; impacts = [0]; y = yS.';
