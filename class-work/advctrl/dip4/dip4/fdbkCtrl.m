@@ -2,9 +2,9 @@ function dx = fdbkCtrl(t,x)
     %uses manipulator form dynamics to simulate the double pendulum for
     %arbirary two-valued control input tau
 
-    Kp = 1;
+    Kp = 0;%1
     Ki = 0;
-    Kd = 6;
+    Kd = 0;%6
     
     %get manipulator form dynamics
     q = x(1:2); dq = x(3:4);
