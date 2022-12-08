@@ -52,7 +52,7 @@ def reinforce(network, nEps = 5000, tMax = 100, gamma = 1.0, nPrint = 100):
         scoresDEQ.append(sum(rewards))
         score.append(sum(rewards))
         discounts = [gamma**i for i in range(len(rewards) + 1)]
-        R = sum([disc, reward for disc, reward in zip(discounts,rewards)])
+        R = sum([(disc, reward) for (disc, reward) in zip(discounts,rewards)])
         loss = []
         for logProb in logProbs:
             loss.append(-logProb*R)
