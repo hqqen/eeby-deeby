@@ -106,19 +106,18 @@ classdef Robot
 
             %singularities occur for straightened legs, set a tolerance and
             %round things away from 0
-            tol = Robot.tol;
-            if abs(q(1)) < tol
+            if abs(q(1)) < Robot.tol
                 if dq(1) < 0
-                    q(1) = -tol;
+                    q(1) = -Robot.tol;
                 else
-                    q(1) = tol;
+                    q(1) = Robot.tol;
                 end
             end
-            if abs(q(3)) < tol
+            if abs(q(3)) < Robot.tol
                 if dq(3) < 0
-                    q(3) = -tol;
+                    q(3) = -Robot.tol;
                 else
-                    q(3) = tol;
+                    q(3) = Robot.tol;
                 end
             end
 
