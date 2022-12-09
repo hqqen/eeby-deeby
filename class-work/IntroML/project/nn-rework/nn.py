@@ -40,7 +40,7 @@ class acroNN(nn.Module):
         return nextAction.item() - 1, m.log_prob(nextAction)
 
 #define reinforcement learning policy
-def reinforce(network, nEps = 100, tMax = 1000, gamma = .05, nPrint = 100): #set tiem back to 100????
+def reinforce(network, nEps = 1500, tMax = 250, gamma = .1, nPrint = 100): #set tiem back to 100????
     scoresDEQ = deque(maxlen = 100)
     score = []
     for ep in range(1,nEps+1):
@@ -76,7 +76,7 @@ torch.manual_seed(0)
 device = torch.device("cpu") #replace with "cuda" if running on cuda capable hardware
 env = gym.make('Acrobot-v1')
 network = acroNN()
-optimizer = optim.Adam(network.parameters(), lr=0.005)
+optimizer = optim.Adam(network.parameters(), lr=0.05)
 loss, lossSum, score = reinforce(network)
 
 1 == 1 
