@@ -6,6 +6,7 @@
 import numpy as np
 import time
 from collections import deque
+import matplotlib.pyplot as plt
 #environment
 import gym
 #ML setup
@@ -21,11 +22,15 @@ class acroNN(nn.Module):
         super(acroNN, self).__init__()
         self.fc1 = nn.Linear(nIn, nHide)
         self.fc1a = nn.Linear(nHide, nHide)
+        self.fc1b = nn.Linear(nHide, nHide)
+        self.fc1c = nn.Linear(nHide, nHide)
         self.fc2 = nn.Linear(nHide,nOut)
 
     def forward(self, state):
-        state = func.leaky_relu(self.fc1(state))
-        state = func.leaky_relu(self.fc1a(state))
+        state = func.softmax(self.fc1(state), dim = 1)
+        state = func.softmax(self.fc1a(state), dim = 1)
+        state = func.softmax(self.fc1b(state), dim = 1)
+        state = func.softmax(self.fc1c(state), dim = 1)
         state = self.fc2(state)
         return func.softmax(state, dim = 1)
 
@@ -35,18 +40,22 @@ class acroNN(nn.Module):
         else:
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         probs = self.forward(state).cpu()
-        m = Categorical(probs)
+        m = Categorical(probs = probs)
         nextAction = m.sample()
-        return nextAction.item() - 1, m.log_prob(nextAction)
+        return nextAction.item() - 1, m.log_prob(nextAction) #nextAction.item() - 1
 
 #define reinforcement learning policy
-def reinforce(network, nEps = 1500, tMax = 250, gamma = .1, nPrint = 100): #set tiem back to 100????
+def reinforce(network, nEps = 1500, tMax = 1000, gamma = 1., nPrint = 100): #set tiem back to 100????
+    env = gym.make('Acrobot-v1')
     scoresDEQ = deque(maxlen = 100)
     score = []
+    opt= optim.Adam(network.parameters(), lr=3e-4)
     for ep in range(1,nEps+1):
         logProbs = []
         rewards = []
         state = env.reset()
+        #env.state = np.array([0,0,0,0,0,0])
+        #state = env.state
         for t in range(tMax):
             nextAction, logProb = network.act(state)
             logProbs.append(logProb)
@@ -57,18 +66,25 @@ def reinforce(network, nEps = 1500, tMax = 250, gamma = .1, nPrint = 100): #set 
         scoresDEQ.append(sum(rewards))
         score.append(sum(rewards))
         discounts = [gamma**i for i in range(len(rewards) + 1)]
-        #R = sum([(disc, reward) for (disc, reward) in zip(discounts,rewards)])
-        R = 0
-        for i in range(np.amin([np.size(discounts), np.size(rewards)])):
-            R += discounts[i]*rewards[i]
+        R = sum([pair[0]*pair[1] for pair in zip(discounts,rewards)])
+        #R = 0
+        #for i in range(np.amin([np.size(discounts), np.size(rewards)])):
+        #    R += discounts[i]*rewards[i]
         loss = []
         for logProb in logProbs:
             loss.append(-logProb*R)
         lossSum = torch.cat(loss).sum()
-        optimizer.zero_grad()
+
+        #if score[-1] >= score[-2]:
+        opt.zero_grad(set_to_none = True)
         lossSum.backward()
-        optimizer.step()
-    return loss, lossSum, score
+        #print("Pre Update Weights:")
+        #print(list(network.parameters()))
+        opt.step()
+        #print("Post Update Weights:")
+        #print(list(network.parameters()))
+        1 == 1 #IF SCORE FOR THIS ROUND IS LOWER THAN THE LAST DONT UPDATE!!!!
+    return loss, lossSum, score, nEps
 
 
 #init environment - seed rng for consistency across runs 
@@ -76,7 +92,20 @@ torch.manual_seed(0)
 device = torch.device("cpu") #replace with "cuda" if running on cuda capable hardware
 env = gym.make('Acrobot-v1')
 network = acroNN()
-optimizer = optim.Adam(network.parameters(), lr=0.05)
-loss, lossSum, score = reinforce(network)
+#optimizer = optim.Rprop(network.parameters(), lr=0.0025)
+i = 0
+#score = [-500]
+#while score[-1] == -98989: 
+loss, lossSum, score, nEps = reinforce(network)
+i += 1
+print(i)
 
-1 == 1 
+print(f"Model took {i} runs to find a solution")
+
+
+plt.plot(score)
+plt.plot([0, nEps], [-100, -100], linestyle = 'dashed')
+plt.title(r"Training Score Curve for Acrobot ($\alpha$ = .05)")
+plt.xlabel('nEpoch #')
+plt.ylabel('Average Reward')
+plt.show()

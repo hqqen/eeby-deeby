@@ -6,27 +6,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main(): 
-    nTrain = 10
+    nTrain = 1
     nEpoch = 100
-    tau = 5
-    alpha = .01
+    tau = 1
+    alphas = [.001, .01, .1]
     
     #initialize environment, train is and close it when done
     bot = gym.make('Acrobot-v1')
     #we want to average training preformance over multiple runs - initialize storage
     ePlot = np.array(np.zeros(nEpoch))
     rPlot = np.array(np.zeros(nEpoch))
-    for i in range(nTrain):
-        e, r = policyGrad(bot, nEpoch = nEpoch, alpha = alpha, nSamples = tau)
-        ePlot = ePlot + e
-        rPlot = rPlot + r
-        print(i+1)
-    #averge over number of training runs
-    ePlot = windowedAve(np.array(ePlot)/nTrain,1)
-    rPlot = windowedAve(np.array(rPlot)/nTrain,1)
-    
-    makePlots(alpha, tau, ePlot, rPlot)
-    
+    for alpha in alphas: 
+        ePlot = []
+        rPlot = []
+        for i in range(nTrain):
+            e, r = policyGrad(bot, nEpoch = nEpoch, alpha = alpha, nSamples = tau)
+            ePlot = ePlot + e
+            rPlot = rPlot + r
+            print(i+1)
+            #averge over number of training runs
+        ePlot = windowedAve(np.array(ePlot)/nTrain,1)
+        rPlot = windowedAve(np.array(rPlot)/nTrain,1)
+        
+        makePlots(alpha, tau, ePlot, rPlot)
+    plt.show()
     bot.close()
 
 
@@ -104,13 +107,14 @@ def makePlots(alpha, nSamples, epochs, rewards):
     #given the same system parameters as the trainer, plot training results
 
     # Plot the rewards over epochs
-    plt.plot(epochs, rewards)
+    plt.plot(epochs, rewards, label = r'$\alpha = %.3f$' %alpha)
     plt.plot([epochs[0],epochs[-1]],[-100, -100],linestyle='dashed')
-    plt.xlabel('nEpoch #')
-    plt.ylabel('Average Reward')
-    plt.title(f'Window Averaged (windowSize = 1) Policy Gradient Training Performance w/α = {alpha},'\
-        f' τ = {nSamples} ')
-    plt.show()
+    plt.xlabel('Epoch #')
+    plt.ylabel('Reward')
+    plt.legend()
+    #plt.title(f'Window Averaged (windowSize = 1) Policy Gradient Training Performance w/α = {alpha},'\
+    #    f' τ = {nSamples} ')
+    #plt.show()
 
     #run som number of training episodes
     '''
