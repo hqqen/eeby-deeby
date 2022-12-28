@@ -20,7 +20,7 @@ currStep = [];
 %run sim
 for i = 1:nSteps
     fprintf("Calculating Step " + i +"/" + nSteps + "\n");
-    [tTemp,yTemp,te,ye,~] = ode45(@biped.doCtrl,tspan,y,opts);
+    [tTemp,yTemp,te,ye,~] = ode45(@biped.doRigidCtrl,tspan,y,opts);
     fprintf("Initial Foot Height:" + biped.getHeight(y(1:4)) + "\n")
     yS = [yS;yTemp]; tS = [tS; tTemp + tS(end)]; impacts = [impacts, te(end)]; yeS = [yeS; ye];
 %     currStep = [currStep; ones(size(tTemp))*i]; %so plotted knows what step we're on

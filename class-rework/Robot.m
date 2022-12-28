@@ -102,6 +102,9 @@ classdef Robot
         end
 
         function dx = doCtrl(Robot,t,x)
+            %do a single control step for the soft biped
+            %ode45 will call this multiple times per timetep, be careful to
+            %avoid singularities resulting from this
             q = x(1:4); dq = x(5:8);
 
             %singularities occur for straightened legs, set a tolerance and
@@ -130,6 +133,41 @@ classdef Robot
             %member stiffness and damping apply to both leg curvatures
             ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] + G); %shouldnt G be negative here? ----%#%@%$^
             dx = [dq;ddq];
+        end
+
+        function dx = doRigidCtrl(Robot,t,x)
+            %do a single controller step while keeing leg curvatues
+            %constant (for rigid leg simulations)
+            q = x(1:4); dq = x(5:8);
+
+            %singularities occur for straightened legs, set a tolerance and
+            %round things away from 0
+            if abs(q(1)) < Robot.tol
+                if dq(1) < 0
+                    q(1) = -Robot.tol;
+                else
+                    q(1) = Robot.tol;
+                end
+            end
+            if abs(q(3)) < Robot.tol
+                if dq(3) < 0
+                    q(3) = -Robot.tol;
+                else
+                    q(3) = Robot.tol;
+                end
+            end
+
+            %picks from a library of controllers to get tau
+            [D,L,g,m,phi,dt,beta,ke,kd,kp,k,nPoints,alpha,epsilon,tht0des] = Robot.getVars();
+            [M,C,G,~,~,~] = Robot.getDynsSpring(q,dq,Robot.p);
+            tau = Robot.getTau(M,C,G,q,dq);
+
+            %member stiffness and damping apply to both leg curvatures
+            ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] + G); %shouldnt G be negative here? ----%#%@%$^
+            dx = [dq;ddq];
+            %zero out the elements corresponding to member curvature
+            dx = [0; dx(2); 0; dx(4); 0; dx(6); 0; dx(8)];
+
         end
 
         function tau = getTau(Robot,M,C,G,q,dq)
@@ -188,7 +226,7 @@ classdef Robot
 
             %find first time deriv
             dh = [dq(1);...
-                 dq(1) + dq(3)];
+                dq(1) + dq(3)];
         end
 
         function [psi] = getPsi(Robot,x,dx)
