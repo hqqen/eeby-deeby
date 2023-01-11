@@ -6,7 +6,7 @@ function [h, isTerm, direction] = isImpact(t,x)
     dq1 = x(7); dtht1 = x(8);
     
     isTerm = 1;
-    direction = 1;
+    direction = 0;
 
     h = swingFootHeight(q0,q1,tht0,tht1);
 

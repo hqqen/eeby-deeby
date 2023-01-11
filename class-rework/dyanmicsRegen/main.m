@@ -1,6 +1,6 @@
-%y = [pi/12 -pi/6 pi/12 7*pi/6 0 0 0 0].';
+y = [pi/12 -pi/6 pi/12 7*pi/6 0 0 0 0].';
 %%y = [pi/12 pi/6 pi/12 5*pi/6 0 0 0 0].';
-y = [pi/12 -pi/6 pi/12 pi/6 0 0 0 0].';
+%y = [pi/12 -pi/6 pi/12 pi/6 0 0 0 0].';
 tspan = [0 10];
 nSteps = 10;
 opts = odeset("Events",@isImpact);
