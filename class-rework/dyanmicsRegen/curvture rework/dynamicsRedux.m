@@ -18,8 +18,8 @@ alpha1 = tht1 + s*q1; %legs have independent curvatures
 xsd0 = D*d*cos(alpha0) - L*int(sin(alpha0),s,0,s);
 ysd0 = D*d*sin(alpha0) + L*int(cos(alpha0),s,0,s);
 
-xsd1 = subs(xsd0,s,1) + D*d*cos(alpha1) - L*int(sin(alpha1),s,0,s);
-ysd1 = subs(ysd0,s,1) + D*d*sin(alpha1) + L*int(cos(alpha1),s,0,s);
+xsd1 = subs(xsd0,s,1) + D*d*cos(alpha1) - L*int((1-s)*sin(alpha1),s,s,0);
+ysd1 = subs(ysd0,s,1) + D*d*sin(alpha1) + L*int((1-s)*cos(alpha1),s,s,0);
 
 %get mass matrix
 p = [xsd0; ysd0; xsd1; ysd1];
@@ -49,5 +49,5 @@ matlabFunction(G,"file","getGroupAction")
 T = .5*dx.'*M*dx;
 matlabFunction(T,P,"file","getEnergy")
 
-ysd1 = subs(ysd1,[s,d],[1,0]);
-matlabFunction(ysd1,"file","swingFootHeight")
+ysd1out = subs(ysd1,[s,d],[1,0]);
+matlabFunction(ysd1out,"file","swingFootHeight")
