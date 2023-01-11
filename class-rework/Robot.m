@@ -163,7 +163,7 @@ classdef Robot
             tau = Robot.getTau(M,C,G,q,dq);
 
             %member stiffness and damping apply to both leg curvatures
-            ddq = M\(tau - C*dq + [beta*dq(1); 0; beta*dq(3); 0] + [k*q(1); 0; k*q(3); 0] + G); %shouldnt G be negative here? ----%#%@%$^
+            ddq = M\(tau - C*dq - [beta*dq(1); 0; beta*dq(3); 0] - [k*q(1); 0; k*q(3); 0] - G); %shouldnt G be negative here? ----%#%@%$^
             dx = [dq;ddq];
             %zero out the elements corresponding to member curvature
             dx = [0; dx(2); 0; dx(4); 0; dx(6); 0; dx(8)];
