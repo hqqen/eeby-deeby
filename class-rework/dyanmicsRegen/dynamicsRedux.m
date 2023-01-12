@@ -1,5 +1,5 @@
-syms q0 tht0 q1 tht1 dq0 dtht0 dq1 dtht1 d s real
-D = .1; L = 1; %10cm across, 1m long
+syms q0 tht0 q1 tht1 dq0 dtht0 dq1 dtht1 d s L real
+D = .1; %L = 1; %10cm across, 1m long
 m = 1; %mass per unit length
 phi = 0; %gravity angle
 g = 9.8;
@@ -43,11 +43,11 @@ for k = 1:n
     end
 end
 
-matlabFunction(M,C,G,"file","genDynamics")
-matlabFunction(G,"file","getGroupAction")
-
-T = .5*dx.'*M*dx;
-matlabFunction(T,P,"file","getEnergy")
-
-ysd1 = subs(ysd1,[s,d],[1,0]);
-matlabFunction(ysd1,"file","swingFootHeight")
+% matlabFunction(M,C,G,"file","genDynamics")
+% matlabFunction(G,"file","getGroupAction")
+% 
+% T = .5*dx.'*M*dx;
+% matlabFunction(T,P,"file","getEnergy")
+% 
+% ysd1 = subs(ysd1,[s,d],[1,0]);
+% matlabFunction(ysd1,"file","swingFootHeight")

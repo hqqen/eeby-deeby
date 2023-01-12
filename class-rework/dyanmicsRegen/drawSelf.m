@@ -38,7 +38,8 @@ function fig = drawSelf(y,f,t)
     %plot the biped
     figure(f); hold off; %we're animating on this, forcibly wipe it while drawing the biped
     plot([stanceLegX hipX],[stanceLegY hipY],'b-'); hold on;
-    ylim([hipY - 1, hipY + 1]); xlim([hipX - 1, hipX + 1]); %center plot on hip, makin sure it has a window big eough to stop limbs from leaving
+    plot([-10 10], [0 0], 'k-');
+    ylim([hipY - 1.25, hipY + 1.25]); xlim([hipX - 1.25, hipX + 1.25]); %center plot on hip, makin sure it has a window big eough to stop limbs from leaving
     plot([hipX swingLegX], [hipY swingLegY],'r-');
     %plot(xSw,ySw,'k*'); %plot separately calc'd foot position to check for issues
     title("Robot State at " + t + " sec");

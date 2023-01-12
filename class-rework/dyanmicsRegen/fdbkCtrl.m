@@ -12,8 +12,8 @@ function [dx] = fdbkCtrl(t,x)
     %for group action add the slope angle in rads to each base angle
     Gphi = getGroupAction(q0,q1,tht0,tht1);
 
-    k = 1.13; b = .1;
-    K = [k 0 0 0;...
+    k = 1.13; b = 3;
+    K = [k 0 0 0;
          0 0 0 0;
          0 0 k 0;
          0 0 0 0];
@@ -21,18 +21,24 @@ function [dx] = fdbkCtrl(t,x)
          0 0 0 0;
          0 0 b 0;
          0 0 0 0];
+    S = [1 0 0 0;
+         0 1 0 0;
+         0 0 1 0;
+         0 1 0 1];
 
     %find control input tau:
-    E = T + P + .5*q.'*K*q;
-    Eref = 15;
-    kp = .2;
-    tau = eye(4)\(G.' - Gphi.' + eye(4)\(-kp*(E-Eref)*dq));
-    tau(1) = 0; tau(3) = 0; %only actuate at the hip; no curvatures and no grnd contact
-    tau(2) = 0;
+    E = T + P;% + .5*q.'*K*q;
+    Eref = 18;
+    kp = .25;
+    tau = S\(G.' - Gphi.' + S\(-kp*(E-Eref)*dq));
+    %tau(1) = 0; tau(3) = 0; %only actuate at the hip; no curvatures and no grnd contact
 
     %tau = tau*0;
     %should have inputs on 1st and 3rd indices but only actuating base
     %angle for now to test rigid gait generation
+    if isnan(cond(M)) || isnan(cond((tau  - C*dq - B*dq - K*q - G.')))  
+        1 == 1;
+    end
     dx = M\(tau  - C*dq - B*dq - K*q - G.');
 
     %zero out curvature RoCs
