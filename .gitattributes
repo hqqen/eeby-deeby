@@ -1,3 +1,9 @@
+<<<<<<< Updated upstream
 *.txt filter=lfs diff=lfs merge=lfs -text
 *.sen filter=lfs diff=lfs merge=lfs -text
 *.SEN filter=lfs diff=lfs merge=lfs -text
+=======
+“*.csv” filter=lfs diff=lfs merge=lfs -text
+“*.txt” filter=lfs diff=lfs merge=lfs -text
+“*.sen” filter=lfs diff=lfs merge=lfs -text
+>>>>>>> Stashed changes
