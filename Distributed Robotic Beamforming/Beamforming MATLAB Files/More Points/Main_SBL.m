@@ -112,11 +112,11 @@ n_w=2*N_a;
 for cc=1:20
 [X,gamma_ind,gamma_est,count] = MSBL(Phi,Y,lambda_SBL,Learn_Lambda,'prune_gamma',1e-4,'max_iters',500,'epsilon',1e-8,'print',0);
 
-% for agnt=1:length(X)
-% if (abs(X(agnt))<1)
-%     X(agnt)=0;
-% end 
-% end
+for agnt=1:length(X)
+if (abs(X(agnt))<1)
+    X(agnt)=0;
+end 
+end
 
 [ind]=find(X);
 ind_len=length(ind);
@@ -150,5 +150,5 @@ if (abs(KK(agnt))<1)
     KK(agnt)=0;
 end 
 end
-nnz(KK).  % output number of pruned agents
+nnz(KK)  % output number of pruned agents
 

@@ -45,42 +45,42 @@ figure(1)
 pcolor(xv,yv,pmat_fdtd')
 shading flat
 % 
-% %% For a given range, compute the phase distribution
-% %rcr = 100;                                             %Range of interest 
-% %pe_spatial_deg = 2;%0.3;                                %inherent phase error we can tolerate (due to the fact that we are not sampling on a circle for each range) 
-% delr = lambda/5; %pe_spatial_deg*(pi/180)/k;  
-% 
-% pmat_fdtd_current = zeros(nx,ny); 
-% rcrv = 1:delr:max(max(rmat));                               %Range vector    
-% nf = length(rcrv);                                       %number of frames 
-% Fw_lw(nf) = struct('cdata',[],'colormap',[]);
-% W2 = VideoWriter('Phase_front.avi'); W2.FrameRate = 3; open(W2);
-% 
-% for ii = 1:length(rcrv)
-% 
-%     rcr = rcrv(ii);                                      %current range 
-%     rcs = rcr - delr;                                    %choose the points that are the "same" range (or are on a circle)  
-%     rcl = rcr + delr;
-% 
-%     idx = find(rmat>=rcs & rmat<=rcl);                   %corresponding indices
-%     [idxc,idyc] = find(rmat>=rcs & rmat<=rcl);
-%     
-%     for jj = 1:length(idxc)
-%     
-%         pmat_fdtd_current(idxc(jj),idyc(jj)) = pmat_fdtd(idxc(jj),idyc(jj));
-%         
-%     end
-%     
-%     figure(2)
-%     pcolor(yv,xv,pmat_fdtd_current);  shading flat; colorbar;     
-%     title('Example')
-%     Fw_lw(ii) = getframe;   
-%     writeVideo(W2,getframe);
-%     
-% end
-% 
-% close(W2);
-% 
-% fps = 10; n = 10; 
-% movie(Fw_lw,n,fps)
+%% For a given range, compute the phase distribution
+%rcr = 100;                                             %Range of interest 
+%pe_spatial_deg = 2;%0.3;                                %inherent phase error we can tolerate (due to the fact that we are not sampling on a circle for each range) 
+delr = lambda/5; %pe_spatial_deg*(pi/180)/k;  
+
+pmat_fdtd_current = zeros(nx,ny); 
+rcrv = 1:delr:max(max(rmat));                               %Range vector    
+nf = length(rcrv);                                       %number of frames 
+Fw_lw(nf) = struct('cdata',[],'colormap',[]);
+W2 = VideoWriter('Phase_front.avi'); W2.FrameRate = 3; open(W2);
+
+for ii = 1:length(rcrv)
+
+    rcr = rcrv(ii);                                      %current range 
+    rcs = rcr - delr;                                    %choose the points that are the "same" range (or are on a circle)  
+    rcl = rcr + delr;
+
+    idx = find(rmat>=rcs & rmat<=rcl);                   %corresponding indices
+    [idxc,idyc] = find(rmat>=rcs & rmat<=rcl);
+    
+    for jj = 1:length(idxc)
+    
+        pmat_fdtd_current(idxc(jj),idyc(jj)) = pmat_fdtd(idxc(jj),idyc(jj));
+        
+    end
+    
+    figure(2)
+    pcolor(yv,xv,pmat_fdtd_current);  shading flat; colorbar;     
+    title('Example')
+    Fw_lw(ii) = getframe;   
+    writeVideo(W2,getframe);
+    
+end
+
+close(W2);
+
+fps = 10; n = 10; 
+movie(Fw_lw,n,fps)
 
