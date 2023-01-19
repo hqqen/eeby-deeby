@@ -70,12 +70,12 @@ for t=1:T-1
     epsilon1 = 10^-7;  % update GD weights
     epsilon2 = .8;     % "
     Kold = K;
-    K = K - epsilon1*(h*K+beta*K-eye(2*N_a));       % preconditioner update (eqn 5)
-    grad(:,t) = [sum(ga,2);sum(galpha,2)];          % get gradient for current timestep
+    K = K - epsilon1*(h*K+beta*K-eye(2*N_a)); % 
+    grad(:,t) = [sum(ga,2);sum(galpha,2)];
     x = [a(:,t);alpha(:,t)] - epsilon2*K*grad(:,t); % gradient update equation (eqns 10-11)
-    a(:,t+1) = x(1:N_a,:);                          % update amplitudes
-    alpha(:,t+1) = x(N_a+1:2*N_a,:);                % update phases
-    grad_norm(:,t) = norm(grad(:,t));               % l2 norm of grad for plot
+    a(:,t+1) = x(1:N_a,:);
+    alpha(:,t+1) = x(N_a+1:2*N_a,:);
+    grad_norm(:,t) = norm(grad(:,t));
     disp(['iter: ',num2str(t),' error: ', num2str(norm(grad(:,t)))])
     if t>1700 && grad_norm(:,t)>grad_norm(:,t-1)
         save('x_ipg.mat','x');
@@ -85,7 +85,7 @@ for t=1:T-1
 end
 
 %%
-figure(1) % plot l2 norm of grad
+figure(1)
 plot(grad_norm, 'color', 'blue', 'LineWidth', 5)
 xlabel('iteration t')
 ylabel('||g(t)||')

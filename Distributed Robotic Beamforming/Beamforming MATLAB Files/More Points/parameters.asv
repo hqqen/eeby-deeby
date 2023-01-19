@@ -47,13 +47,13 @@ box on
 hold on
 
 
-f = abs(AFd)';       % array factor at every sampled point
-theta = theta';     
-N_s =  Num_samples; 
-N_a = 64;            % extend to 64 agents
-rm = zeros(2,N_a);   % reinitialize positions for 64 agents
+f = abs(AFd)'; 
+theta = theta';
+N_s =  Num_samples;
+N_a = 64;
+rm = zeros(2,N_a);  
 for i=1:N_a
-    rm(:,i) =[(i-3)*d, 0]' ; % place 64 agents with the same spacing as before, where the 3rd is at 0
+    rm(:,i) =[(i-3)*d, 0]' ;
 end
-xm = rm(1,:)'; % split into x and y posns
+xm = rm(1,:)';
 ym = rm(2,:)';

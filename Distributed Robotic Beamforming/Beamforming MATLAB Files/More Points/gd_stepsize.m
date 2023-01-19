@@ -62,7 +62,7 @@ for t=1:T-1
                 + f(i,:)/den^3*(-a(m,t)*v(m,i)*a(:,t)'*u(:,i)+a(m,t)*u(m,i)*a(:,t)'*v(:,i))*(-a(:,t)'*u(:,i)*a(:,t).*v(:,i)+a(:,t)'*v(:,i)*a(:,t).*u(:,i));  
         end
     end
-    epsilon = 1/(max(eig(h))+beta);
+    epsilon = 1/(max(eig(h))+beta); % change GD stepsize function of eigevals of hessian - optimal soln
     a(:,t+1) = a(:,t) - epsilon*sum(ga,2);
     alpha(:,t+1) = alpha(:,t) - epsilon*sum(galpha,2);
     grad(:,t) = [sum(ga,2);sum(galpha,2)];
