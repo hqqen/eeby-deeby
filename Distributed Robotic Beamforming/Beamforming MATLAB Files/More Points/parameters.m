@@ -49,7 +49,7 @@ hold on
 
 f = abs(AFd)';       % array factor at every sampled point
 theta = theta';     
-N_s =  Num_samples; 
+N_s =  Num_samples;  
 N_a = 64;            % extend to 64 agents
 rm = zeros(2,N_a);   % reinitialize positions for 64 agents
 for i=1:N_a

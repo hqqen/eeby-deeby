@@ -36,13 +36,13 @@ for m=1:N_a
 end
 
 %%
-scatter(xm,ym,'LineWidth',5)
-hold on
-grid on
-set(gca, 'LineWidth', 5, 'FontSize', 35)
-scatter(rho(1:2).*cos(theta(1:2)),rho(1:2).*sin(theta(1:2)),'LineWidth',5)
-scatter(rho(3:end).*cos(theta(3:end)),rho(3:end).*sin(theta(3:end)),'LineWidth',5)
-xlabel('position x')
-ylabel('position y')
-axis('square')
-ylim([-100 200])
+% scatter(xm,ym,'LineWidth',5)
+% hold on
+% grid on
+% set(gca, 'LineWidth', 5, 'FontSize', 35)
+% scatter(rho(1:2).*cos(theta(1:2)),rho(1:2).*sin(theta(1:2)),'LineWidth',5)
+% scatter(rho(3:end).*cos(theta(3:end)),rho(3:end).*sin(theta(3:end)),'LineWidth',5)
+% xlabel('position x')
+% ylabel('position y')
+% axis('square')
+% ylim([-100 200])
