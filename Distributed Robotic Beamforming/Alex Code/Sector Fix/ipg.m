@@ -12,7 +12,7 @@ af =  zeros(N_s,1);         % calc'd array factor
 af_db = zeros(N_s,T-1);     % calc'd array factor in dB
 a(:,1) = 100*rand(N_a,1);   % the first amplitude guess is randomly dist'd from 0-100
 alpha(:,1) = rand(N_a,1);   % initial phase guess is randomly dist'd from 0-1
-epsilon1 = 1e-5;            % preconditioner descent rate (eqn 5)
+epsilon1 = 1e-2;            % preconditioner descent rate (eqn 5)
 epsilon2 = 1;               % gradient descent rate (delta, eqn 4)
 K = 0*ones(2*N_a);          % init preconditioner
 beta = 0.1;                 % local preconditioner update rate (eqns 5, 12)
@@ -21,9 +21,9 @@ u_ch = zeros(N_a,N_s);      % init agentwise post-fading update vectors
 v_ch = zeros(N_a,N_s);
 error_fdb = zeros(1,T);     %error storage
 
-w = 1./sqrt(f);             % init penalty weights
-w = (w/sum(w));               % normalize penalty weights
-% w = .125*ones(size(f));
+% w = 1./sqrt(f);             % init penalty weights
+% w = (w/sum(w));               % normalize penalty weights
+ w = .25*ones(size(f));
 
 %%
 for t=1:T-1                % for each iteration
@@ -77,8 +77,13 @@ for t=1:T-1                % for each iteration
         end
     end
 
-    epsilon1 = 0.125/(max(eig(h))+beta);                % pick optimal descent rate for preconditioner
-    %epsilon2 = .1/(max(eig(h)) - min(eig(h)));       % not in original code
+    epsilon1 = 1/(max(eig(h))+beta);                % pick optimal descent rate for preconditioner
+    % epsilon2 = .1/(max(eig(h)) - min(eig(h)));       % not in original code
+    if t > 1000
+        epsilon2 = 1/(ceil(t/1000));
+        epsilon1 = 1e-2/(ceil(t/1000)*(max(eig(h))+beta));
+        beta = .1/ceil(t/1000);
+    end
     K = K - epsilon1*(h*K+beta*K-eye(2*N_a));         % mass update preconditioner (using eqn 5, not 12)
     grad(:,t) = [sum(ga,2);sum(galpha,2)];            % agent-wise gradient is summed
     x = [a(:,t);alpha(:,t)] - epsilon2*K*grad(:,t);   % gradient update (eqn 4)
@@ -124,8 +129,15 @@ for t=1:T-1                % for each iteration
         grid on
 
         figure(3);
-        plot(error_fdb(1:t))
+        plot(movmean(error_fdb(1:t),25))
+        title("Windowed Average of Error in dB (k = 25)")
     end
+end
+
+
+figure(); hold on
+for i = 1:707
+    scatter(i,min(error_fdb(1:i)))
 end
 
 %%
@@ -144,6 +156,6 @@ end
 % set(gca, 'LineWidth', 5, 'FontSize', 35)
 % grid on
 % hold on
-figure(4)
-plot(movmean(error_fdb,100))
-title("Windowed Average of Error in dB (k = 10)")
+% figure(4)
+% plot(movmean(error_fdb,100))
+% title("Windowed Average of Error in dB (k = 10)")

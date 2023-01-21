@@ -5,7 +5,7 @@ close all
 %%
 lambda = 7.5;                       % inter agent spacing?
 k = (2.*pi)./lambda;                % wave number
-for i=1:100                          % randomize inital positions of agents
+for i=1:60                          % randomize inital positions of agents
     if rand<0.5
         xm(i,:) = (mod(i,7)-3)*1;
         ym(i,:) = (ceil(i/7)-4)*1;
@@ -23,7 +23,12 @@ theta = pi./15;                         % angle of allied reciever
 theta_sec = linspace(pi./6,3*pi./6,s);  % divide workspace into 30deg sectors
 theta = [theta;theta_sec'];             % make list of all receiver posns
 
-f = [10;sin(theta(2:end))]/1;             % set magnitude of des'd beampower at each receiver
+f = squareFourier(5,pi,.1,5,theta);             % set magnitude of des'd beampower at each receiver
+f = (f + abs(min(f))*2);
+f = f./max(f);
+figure();
+plot(theta,f,'k--')
+title("Desired Beampattern")
 
 N_a = length(xm);                       % only count remaining agents
 N_s = length(rho);                      % want to sample transmitted strength to each receiver
@@ -40,6 +45,7 @@ for m=1:N_a
 end
 
 %%
+figure();
 scatter(xm,ym,'LineWidth',5) % plot workspace with agents
 hold on
 grid on
