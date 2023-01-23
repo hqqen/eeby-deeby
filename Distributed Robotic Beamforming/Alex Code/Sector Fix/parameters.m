@@ -20,12 +20,37 @@ s = 20;                             % numer of sectors to look at
 % f = [5;1*ones(s,1)]/10;             % set magnitude of des'd beampower at each receiver
 rho = [50*lambda/2*ones(1,1);50*lambda/2*ones(s/2,1);60*lambda/2*ones(s/2,1)]; % get distance from transmitter to receiver
 theta = pi./15;                         % angle of allied reciever
-theta_sec = linspace(pi./6,3*pi./6,s);  % divide workspace into 30deg sectors
+theta_sec = linspace(pi./3,3*pi./3,s);  % divide workspace into 30deg sectors
 theta = [theta;theta_sec'];             % make list of all receiver posns
+% theta = 0;                         % angle of allied reciever
+% theta_sec = linspace(pi./3,2.5*pi./3,s);  % divide workspace into 30deg sectors
+% theta = [theta;theta_sec'];             % make list of all receiver posns
+
+% % Parameters of desired beam
+% f = 40e6;                                     % Frequency in Hz                                                                        
+% N_d = 5;                                       % Number of elements of array  
+% lambda = 3e8/f;                               % wave length
+% d = lambda/4;                                 % Inter-element spacing
+% k = (2*pi)./lambda;                           % wave number
+% rm_d = [xm,ym];
+% % channel parameters
+% gamma = 1;                                   
+% mu = 2;
+% nu = 1;  
+% rho = 1.5*d; 
+% % Array factor (AFd) of desired beam
+% AFd = GetArrayFactor(N_d, rm_d, Am_d, alpha_d, gamma, mu, nu, rho, theta); % call provided code to find AF
+% figure();
+% h = polar(theta,abs(AFd),'r'); % plot
+% set(h,'LineWidth',2);
+% box on
+% hold on
+
 
 f = squareFourier(5,pi,.1,5,theta);             % set magnitude of des'd beampower at each receiver
 f = (f + abs(min(f))*2);
-f = f./max(f);
+f = f./(2*max(f));
+% f = [0.5000    0.2693    0.2641    0.2602    0.2574    0.2555    0.2543    0.2538    0.2539    0.2546    0.2561    0.2583    0.2614    0.2656    0.2715    0.2795    0.2904    0.3048    0.3233    0.3458    0.3717].';
 figure();
 plot(theta,f,'k--')
 title("Desired Beampattern")

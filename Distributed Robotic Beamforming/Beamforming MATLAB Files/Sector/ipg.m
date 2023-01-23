@@ -2,7 +2,7 @@ clc
 % rng('default')
 
 %%
-T = 1000;                   % run for 1e3 iterations
+T = 10000;                   % run for 1e3 iterations
 I = eye(N_a);               % for later use
 a = zeros(N_a,T);           % array of amplitude guesses
 alpha = zeros(N_a,T);       % array of phase guesses
@@ -100,20 +100,32 @@ for t=1:T-1                % for each iteration
         af(i,t) = den_ch;                                       % store rec'd(?) AF
     end
     af_db(:,t) = 20*log10(af(:,t)/max(af(:,t)));                % convert norm'd AF to dB
-    error_fdb = norm(af_db(:,t)-20*log10(f/max(f)),1)/N_s;      % find error btwn norm'd rec'd AF and norm'd des'd AF
+    %error_fdb = norm(af_db(:,t)-20*log10(f/max(f)),1)/N_s;      % find error btwn norm'd rec'd AF and norm'd des'd AF
     %     error_f = norm(af-f,1)/N_s;                               % find error not in dB
-    disp(['iter: ',num2str(t),' error_db: ',num2str(error_fdb)])
+    error_fdb(t) = norm(af_db(:,t)-20*log10(f/max(f)),1)/N_s;      % find error btwn norm'd rec'd AF and norm'd des'd AF in dB
+   
+    disp(['iter: ',num2str(t),' error_db: ',num2str(error_fdb(t))])
 
-    figure(2)                                   % plot
-    plot(theta,af_db(:,t), 'g', 'LineWidth', 5)
-    hold on
-    plot(theta,20*log10(f/max(f)), '--k', 'LineWidth', 3)
-    hold off
-    xlabel('theta (radian)')
-    ylabel('radiation pattern (dB)')
-    set(gca, 'LineWidth', 5, 'FontSize', 35)
-    drawnow
-    grid on
+
+     if isnan(error_fdb(t))
+        break                                                      % if the algorithm ever returns an invalid error break
+    end
+    if ~mod(t,100)
+        figure(2)                                   % plot
+        plot(theta,af_db(:,t), 'g', 'LineWidth', 5)
+        hold on
+        plot(theta,20*log10(f/max(f)), '--k', 'LineWidth', 3)
+        hold off
+        xlabel('theta (radian)')
+        ylabel('radiation pattern (dB)')
+        set(gca, 'LineWidth', 5, 'FontSize', 35)
+        drawnow
+        grid on
+
+        figure(3);
+        plot(movmean(error_fdb(1:t),25))
+        title("Windowed Average of Error in dB (k = 25)")
+    end
 end
 
 %%
@@ -124,10 +136,13 @@ end
 [p,q]=min(error);
 
 %%
-figure(3)                                   % plot
-plot(theta,af_db(:,1), 'g', 'LineWidth', 5)
-xlabel('theta (radian)')
-ylabel('radiation pattern (dB)')
-set(gca, 'LineWidth', 5, 'FontSize', 35)
-grid on
-hold on
+% figure(3)                                   % plot
+% plot(theta,af_db(:,1), 'g', 'LineWidth', 5)
+% xlabel('theta (radian)')
+% ylabel('radiation pattern (dB)')
+% set(gca, 'LineWidth', 5, 'FontSize', 35)
+% grid on
+% hold on
+figure(4)
+plot(movmean(error_fdb,100))
+title("Windowed Average of Error in dB (k = 10)")

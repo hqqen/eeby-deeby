@@ -23,7 +23,7 @@ error_fdb = zeros(1,T);     %error storage
 
 % w = 1./sqrt(f);             % init penalty weights
 % w = (w/sum(w));               % normalize penalty weights
- w = .25*ones(size(f));
+ w = .01*ones(size(f));
 
 %%
 for t=1:T-1                % for each iteration
@@ -78,10 +78,10 @@ for t=1:T-1                % for each iteration
     end
 
     epsilon1 = 1/(max(eig(h))+beta);                % pick optimal descent rate for preconditioner
-    % epsilon2 = .1/(max(eig(h)) - min(eig(h)));       % not in original code
+%     epsilon2 = .1/(max(eig(h)) - min(eig(h)));       % not in original code
     if t > 1000
         epsilon2 = 1/(ceil(t/1000));
-        epsilon1 = 1e-2/(ceil(t/1000)*(max(eig(h))+beta));
+        epsilon1 = .75/(ceil(t/1000)*(max(eig(h))+beta));
         beta = .1/ceil(t/1000);
     end
     K = K - epsilon1*(h*K+beta*K-eye(2*N_a));         % mass update preconditioner (using eqn 5, not 12)
@@ -156,6 +156,6 @@ end
 % set(gca, 'LineWidth', 5, 'FontSize', 35)
 % grid on
 % hold on
-% figure(4)
-% plot(movmean(error_fdb,100))
-% title("Windowed Average of Error in dB (k = 10)")
+figure(4)
+plot(movmean(error_fdb,100))
+title("Windowed Average of Error in dB (k = 10)")
