@@ -67,22 +67,22 @@ for t=1:T-1
     alpha(:,t+1) = x(N_a+1:2*N_a,:);
     grad_norm(:,t) = norm(grad(:,t));
     
-%     for m=1:N_a
-%         for i=1:N_s
-%             u_ch(m,i) = gamma_ch(m,i)/(d(m,i)^(mu/2))*cos(alpha(m,t)+zeta(m,i));
-%             v_ch(m,i) = gamma_ch(m,i)/(d(m,i)^(mu/2))*sin(alpha(m,t)+zeta(m,i));
-%         end
-%     end
-%     for i=1:N_s
-%         den_ch = 0;
-%         for m=1:N_a
-%             den_ch = den_ch + a(m,t)*(u_ch(m,i)+1i*v_ch(m,i));
-%         end
-%         den_ch = abs(den_ch);
-%         af_ch(i,t) = den_ch;
-%     end
-%     af_db(:,t) = 20*log10(af_ch(:,t)/max(af_ch(:,t)));
-%     disp(['iter: ',num2str(t),' Rx1: ',num2str(af_db(1,t)),' Rx2: ',num2str(af_db(2,t))])
+    for m=1:N_a
+        for i=1:N_s
+            u_ch(m,i) = gamma_ch(m,i)/(d(m,i)^(mu/2))*cos(alpha(m,t)+zeta(m,i));
+            v_ch(m,i) = gamma_ch(m,i)/(d(m,i)^(mu/2))*sin(alpha(m,t)+zeta(m,i));
+        end
+    end
+    for i=1:N_s
+        den_ch = 0;
+        for m=1:N_a
+            den_ch = den_ch + a(m,t)*(u_ch(m,i)+1i*v_ch(m,i));
+        end
+        den_ch = abs(den_ch);
+        af_ch(i,t) = den_ch;
+    end
+    af_db(:,t) = 20*log10(af_ch(:,t)/max(af_ch(:,t)));
+    disp(['iter: ',num2str(t),' Rx1: ',num2str(af_db(1,t)),' Rx2: ',num2str(af_db(t))])
    
 t
 end
