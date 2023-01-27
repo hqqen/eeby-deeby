@@ -14,7 +14,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% function [] = Main_SBL()
+function [] = Main_SBL()
 
 %=========================================================================
 clc
@@ -24,7 +24,7 @@ rng default
 %==========================================================================
 % Parameters of desired beam
 f = 40e6;                                     % Frequency in Hz
-N_d = 21;                                       % Number of elements of array
+N_d =5;                                       % Number of elements of array
 lambda = 3e8/f;                               % wave length
 d = lambda/4;                                 % Inter-element spacing
 k = (2*pi)./lambda;
@@ -50,21 +50,21 @@ end
 %==========================================================================
 % space discretization
 Num_samples = 49;                        % No. of samples from desired beam
-N_a = 18;
+N_a =Num_samples-11;
 theta =linspace(0,2*pi,Num_samples);     % N samples from theta space
 
 
 % Array factor (AFd) of desired beam
 AFd = GetArrayFactor(N_d, rm_d, Am_d, alpha_d, gamma, mu, nu, rho, theta);
-% figure(1);
-% polarplot(theta,real(AFd),'r', "LineWidth", 5);
-% title("Desired Beampattern", 'LineWidth', 5)
-% set(gca,'LineWidth',5,'FontSize',12);
+figure(1);
+polarplot(theta,real(AFd),'r');
+title("Desired Beampattern", 'LineWidth', 5)
+set(gca,'LineWidth',5,'FontSize',24);
 % box on
 
-% figure(2);
-% scatter(rm_d(1,:),rm_d(2,:), 'LineWidth', 5);
-% title("Agent Array for Des'd Beampattern")
+figure(2);
+scatter(rm_d(1,:),rm_d(2,:), 'LineWidth', 5);
+title("Agent Array for Des'd Beampattern")
 
 % True parameters (i.e., initial conditions)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,10 +83,10 @@ for i=1:N_a %:-1:1
 end
 
 
-% figure(3);
-% scatter(rm(1,:),rm(2,:),'LineWidth', 5);
-% title("Randomly Initialized Array Elements")
-% grid on
+figure(3);
+scatter(rm(1,:),rm(2,:),'LineWidth', 5);
+title("Randomly Initialized Array Elements")
+grid on
 
 % The below part is to separate the real and imaginary part of the phi matrix
 %==========================================================================
@@ -118,7 +118,7 @@ lambda_SBL=70;
 Learn_Lambda=0;
 n_w=2*N_a;
 for cc=1:5
-    [X,~,~,~] = MSBL(Phi,Y,lambda_SBL,Learn_Lambda,'prune_gamma',1e-4,'max_iters',500,'epsilon',1e-8,'print',0);
+    [X,gamma_ind,gamma_est,count] = MSBL(Phi,Y,lambda_SBL,Learn_Lambda,'prune_gamma',1e-4,'max_iters',500,'epsilon',1e-8,'print',0);
 
     % for agnt=1:length(X)
     % if (abs(X(agnt))<1)
@@ -151,7 +151,7 @@ for cc=1:5
     AFF_n1=phi_H_up1*(X(1:.5*ind_len)+1i*X(.5*ind_len+1:ind_len));
     norm(abs(AFF_n1)-abs(AFd)')
     figure(40);
-    polarplot(theta,real(AFF_n1)','g', 'LineWidth', 5)
+    polar(theta,real(AFF_n1)','g')
     title("Achieved Array Factor")
     drawnow
 

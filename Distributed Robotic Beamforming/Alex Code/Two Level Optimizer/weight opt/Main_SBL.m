@@ -10,11 +10,11 @@
 %% Output: Selected subset of agents, AF: Array factor of actual beam
 %% Subfiles: GetArrayFactor.m: returns desired array factor
 %%%%%%% MSBL.m: returns real and imaginary part of excitation (w) for each agent
-%% Last modified: by Anjaly Parayil
+%% Last modified: by Alex Beyer (01/23)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% function [] = Main_SBL()
+function [KK] = Main_SBL(rm,AFd,N_a,theta)
 
 %=========================================================================
 clc
@@ -24,7 +24,7 @@ rng default
 %==========================================================================
 % Parameters of desired beam
 f = 40e6;                                     % Frequency in Hz
-N_d = 21;                                       % Number of elements of array
+N_d = 5;                                       % Number of elements of array
 lambda = 3e8/f;                               % wave length
 d = lambda/4;                                 % Inter-element spacing
 k = (2*pi)./lambda;
@@ -37,25 +37,25 @@ rho = 1.5*d;
 
 % desired beam (array factor) parameters
 %==========================================================================
-Am_d = zeros(1,N_d);                                    % element amplitude
-rm_d = zeros(2,N_d);                                    % element locations
-alpha_d = 45*ones(1,N_d);                       % element phase
-alpha_d = alpha_d*pi/180;
-a = 100*ones(1,N_d);
-for i=1:N_d
-    Am_d(:,i) = a(i);
-    rm_d(:,i) =[(i-3)*d, 0]' ;
-end
+% Am_d = zeros(1,N_d);                                    % element amplitude
+% rm_d = zeros(2,N_d);                                    % element locations
+% alpha_d = 45*ones(1,N_d);                       % element phase
+% alpha_d = alpha_d*pi/180;
+% a = 100*ones(1,N_d);
+% for i=1:N_d
+%     Am_d(:,i) = a(i);
+%     rm_d(:,i) =[(i-3)*d, 0]' ;
+% end
 
 %==========================================================================
 % space discretization
-Num_samples = 49;                        % No. of samples from desired beam
-N_a = 18;
-theta =linspace(0,2*pi,Num_samples);     % N samples from theta space
+% Num_samples = 49;                        % No. of samples from desired beam
+% N_a = 21;
+% theta =linspace(0,2*pi,Num_samples);     % N samples from theta space
 
 
 % Array factor (AFd) of desired beam
-AFd = GetArrayFactor(N_d, rm_d, Am_d, alpha_d, gamma, mu, nu, rho, theta);
+% AFd = GetArrayFactor(N_d, rm_d, Am_d, alpha_d, gamma, mu, nu, rho, theta);
 % figure(1);
 % polarplot(theta,real(AFd),'r', "LineWidth", 5);
 % title("Desired Beampattern", 'LineWidth', 5)
@@ -71,16 +71,16 @@ AFd = GetArrayFactor(N_d, rm_d, Am_d, alpha_d, gamma, mu, nu, rho, theta);
 a = 100*ones(1,N_a);
 
 % Am = abs(a + 10*randn(1,N_a));                        % element amplitude
-rm = zeros(2,N_a);                                    % element locations
+% rm = zeros(2,N_a);                                    % element locations
 % alpha =45*ones(1,N_a) + 3*randn(1,N_a);                % element phase
 % alpha = alpha*pi/180;
 % beta = 45*pi/180;                                   % rotate the linear array by beta
 % Rmat = [cos(beta) -sin(beta);sin(beta) cos(beta)];  % Rotation matrix
-for i=1:N_a %:-1:1
+% for i=1:N_a %:-1:1
     % pos=i;N_a-i-1;
-    rm(:,i) =+1*randn(2,1);%2*[0.013517; 0.051525];%
+    % rm(:,i) =+1*randn(2,1);%2*[0.013517; 0.051525];%
 
-end
+% end
 
 
 % figure(3);
@@ -150,10 +150,10 @@ for cc=1:5
 
     AFF_n1=phi_H_up1*(X(1:.5*ind_len)+1i*X(.5*ind_len+1:ind_len));
     norm(abs(AFF_n1)-abs(AFd)')
-    figure(40);
-    polarplot(theta,real(AFF_n1)','g', 'LineWidth', 5)
-    title("Achieved Array Factor")
-    drawnow
+    % figure(40);
+    % polarplot(theta,real(AFF_n1)','g', 'LineWidth', 5)
+    % title("Achieved Array Factor")
+    % drawnow
 
     KK=X(1:.5*ind_len)+1i*X(.5*ind_len+1:ind_len);
     for agnt=1:.5*ind_len
