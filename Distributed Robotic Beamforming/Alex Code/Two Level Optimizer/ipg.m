@@ -2,7 +2,7 @@ clc
 % rng('default')
 
 %%
-T = 1e4;                   % run for 1e3 iterations
+T = 5e3;                   % run for 1e3 iterations
 I = eye(N_a);               % for later use
 a = zeros(N_a,T);           % array of amplitude guesses
 alpha = zeros(N_a,T);       % array of phase guesses
@@ -72,7 +72,11 @@ for t=1:T-1                % for each iteration
                 den = den + a(j,t)*(u(j,i)+1i*v(j,i));  % rebuild the fraction for finding hessian of eqn 3
             end
             den = abs(den);                             % get magn of AF (for use in eqns 10, 11)
-            af(i,t) = den; 
+            %% get results in teh absence of noise
+%             af(i,t) = den; 
+%             af_db(:,t) = 20*log10(af(:,t)/max(af(:,t)));                % convert norm'd AF to dB
+
+            %% 
             num = den - f(i,:);                         % numerator is difference of rec'd and des'd AF (for use in eqn 10)
             % calculate hessian (mirrored terms first then nonmirrored terms)
             h(1:N_a,m) = h(1:N_a,m) + w(i,:)*(num/den*(u(m,i)*u(:,i)+v(m,i)*v(:,i)) + f(i,:)/den^3*(u(m,i)*u(:,i)'*a(:,t)+v(m,i)*v(:,i)'*a(:,t))*(u(:,i)*u(:,i)'*a(:,t)+v(:,i)*v(:,i)'*a(:,t)));
@@ -88,11 +92,11 @@ for t=1:T-1                % for each iteration
 
     %% test code to dial in algorithm parameters, helps with noise robustness
 %     epsilon2 = .1/(max(eig(h)) - min(eig(h)));       % not in original code
-    if t > 1000
-        epsilon2 = 1/(ceil(t/1000));
-        epsilon1 = .75/(ceil(t/1000)*(max(eig(h))+beta));
-        beta = .1/ceil(t/1000);
-    end
+%     if t > 1000
+%         epsilon2 = 1/(ceil(t/1000));
+%         epsilon1 = .75/(ceil(t/1000)*(max(eig(h))+beta));
+%         beta = .1/ceil(t/1000);
+%     end
     %% 
 
     K = K - epsilon1*(h*K+beta*K-eye(2*N_a));         % mass update preconditioner (using eqn 5, not 12)
@@ -104,7 +108,7 @@ for t=1:T-1                % for each iteration
 
     gamma_ch = normrnd(1,0.1,N_a,N_s);                % channel fading parameter is randomized at each step
     %% disable noise
-    %     gamma_ch = gamma;
+%         gamma_ch = gamma;
     %% 
     for m=1:N_a                                                                  % for each agent
         for i=1:N_s                                                              % at each sampled angle
@@ -137,7 +141,7 @@ for t=1:T-1                % for each iteration
         hold on
         plot(theta,20*log10(f/max(f)), '--k', 'LineWidth', 3)
         hold off
-        xlabel('theta (radian)')
+        xlabel('\theta (radian)')
         ylabel('radiation pattern (dB)')
         set(gca, 'LineWidth', 5, 'FontSize', 35)
         drawnow
@@ -146,15 +150,17 @@ for t=1:T-1                % for each iteration
         figure(3);
         plot(movmean(error_fdb_ch(1:t),25), 'LineWidth', 5)
         set(gca, 'FontSize', 35)
-        title("Windowed Average of Error in dB (k = 25)")
+        title("Windowed Average of Error (k = 25)")
+        ylabel("||E(t)|| (dB)")
+        xlabel("t")
     end
 end
 
 
-figure(); hold on
-for i = 1:707
-    scatter(i,min(error_fdb_ch(1:i)))
-end
+% figure(); hold on
+% for i = 1:707
+%     scatter(i,min(error_fdb_ch(1:i)))
+% end
 
 %%
 % error = zeros(1,t-1);
@@ -172,6 +178,23 @@ end
 % set(gca, 'LineWidth', 5, 'FontSize', 35)
 % grid on
 % hold on
-figure(4)
-plot(movmean(error_fdb_ch,100))
-title("Windowed Average of Error in dB (k = 100)")
+% figure(4)
+% plot(movmean(error_fdb_ch,100))
+% title("Windowed Average of Error in dB (k = 100)")
+figure(5)                                   % plot
+plot(theta,af_db_ch(:,1), 'g', 'LineWidth', 5); hold on
+plot(theta,af_db_ch(:,100), 'r', 'LineWidth', 5)
+plot(theta,af_db_ch(:,250), 'b', 'LineWidth', 5)
+plot(theta,af_db_ch(:,500), 'c', 'LineWidth', 5)
+plot(theta,af_db_ch(:,999), 'm', 'LineWidth', 5)
+set(gca, 'FontSize', 35)
+hold on
+plot(theta,20*log10(f/max(f)), '--k', 'LineWidth', 3)
+title("Beampattern Matching with Noise")
+legend("t = 0", "t = 1000", "t = 2500", "t = 5000", "t = 10000", "Desired Pattern", "Location", "Best")
+hold off
+xlabel('\theta (radian)')
+ylabel('radiation pattern (dB)')
+set(gca, 'LineWidth', 5, 'FontSize', 35)
+drawnow
+grid on

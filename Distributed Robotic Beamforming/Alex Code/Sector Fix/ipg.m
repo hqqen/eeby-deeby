@@ -2,7 +2,7 @@ clc
 % rng('default')
 
 %%
-T = 1e3;                   % run for 1e3 iterations
+T = 5e3;                   % run for 1e3 iterations
 I = eye(N_a);               % for later use
 a = zeros(N_a,T);           % array of amplitude guesses
 alpha = zeros(N_a,T);       % array of phase guesses

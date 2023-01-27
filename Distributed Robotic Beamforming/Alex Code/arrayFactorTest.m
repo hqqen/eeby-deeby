@@ -5,8 +5,8 @@ a = [1, 1];
 alpha = [0, 0];
 tht = 0:.01:2*pi;
 AF = [tht; zeros(1, size(tht,2))];
-for d = 0:pi/100:8*pi
-    gain(2) = d;
+for d = 0:pi/100:2*pi
+    alpha = [d d];
     for j = 1:max(size(tht))
         for k = 1:max(size(x))
 
