@@ -31,7 +31,7 @@ s = 20;                             % numer of sectors to look at
 %%
 
 
-% f = [5;1*ones(s,1)]/10;             % set magnitude of des'd beampower at each receiver
+f = [5;1*ones(s,1)]/10;             % set magnitude of des'd beampower at each receiver
 xm = [1 2 3 4 5 6 7 8].';
 ym = [1 2 3 4 5 6 7 8].';
 rho = [50*lambda/2*ones(1,1);50*lambda/2*ones(s/2,1);60*lambda/2*ones(s/2,1)]; % get distance from transmitter to receiver
@@ -66,7 +66,7 @@ theta = [theta;theta_sec'];             % make list of all receiver posns
 % f = squareFourier(5,2*pi,.1,5,theta);             % set magnitude of des'd beampower at each receiver
 % f = (f + abs(min(f))*2);
 % f = f./(2*max(f));
-f = [0.5000    0.2200    0.2157    0.2121    0.2093    0.2072    0.2059    0.2053    0.2055    0.2063    0.2078    0.2101    0.2132    0.2170    0.2216    0.2269    0.2329    0.2405    0.2514    0.2681    0.2934].';
+% f = [0.5000    0.2200    0.2157    0.2121    0.2093    0.2072    0.2059    0.2053    0.2055    0.2063    0.2078    0.2101    0.2132    0.2170    0.2216    0.2269    0.2329    0.2405    0.2514    0.2681    0.2934].';
 figure();
 plot(theta,f,'k--','LineWidth',4)
 title("Desired Beampattern")

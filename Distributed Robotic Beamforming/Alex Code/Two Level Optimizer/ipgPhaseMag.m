@@ -9,7 +9,7 @@ function [amp, alpha, AF, noisyAF] = ipgPhaseMag(T,f,r,rho,tht,a0,alpha0,w,f0)
 % a0 - initial cplx amplitude guess
 % alpha0 - initial phase offsest guess
 % f0 - beam frequency (probably 40e6)
-% w - vector of weights (1/rx)
+% w - vector of error weights (1/rx)
 % returns:
 % amp - 1xNa vector of cplx transmitter amplitudes
 % alpha - 1xNa vector of transmitte rphase offsets
@@ -33,6 +33,9 @@ lambda = 3e8/f0;
 k = (2*pi)/lambda;
 I = eye(Na);
 K = 0*ones(2*Na);
+tht = reshape(tht, max(size(tht)), 1);
+w = reshape(w,max(size(w)), 1);
+f = reshape(f, max(size(f)), 1);
 
 % initialize channel fading parameters
 d = zeros(Na,Ns);       % transmitter - reciever distance
@@ -73,8 +76,8 @@ for t = 1:T
         % numerator is error (diff btwn des'd and rec'd AF)
         num = den - f(rec, :);
         % now calculate the gradient at each reciever
-        ga(:,rec) = w(rec,:)*((num/den)*( (a(:,t)'*u(:,rec))*u(:,rec) + (a(:,t)'*v(:,rec))*v(:,rec) ));
-        galpha(:,rec) = w(rec,:)*((num/den)*( -(a(:,t)'*u(:,rec))*a(:,t).*v(:,rec) + (a(:,t)'*v(:,rec))*a(:,t).*u(:,rec) ));
+        ga(:,rec) = w(rec,:)*(num/den*((a(:,t)'*u(:,rec))*u(:,rec) + (a(:,t)'*v(:,rec))*v(:,rec)));
+        galpha(:,rec) = w(rec,:)*(num/den*(-(a(:,t)'*u(:,rec))*a(:,t).*v(:,rec) + (a(:,t)'*v(:,rec))*a(:,t).*u(:,rec)));
     end
     AFDB(:,t) = 20*log10(AF(:,t)/max(AF(:,t)));
     errorDB(t) = norm(AFDB(:,t) - 20*log10(f/max(f)),1)/Ns;
@@ -92,7 +95,6 @@ for t = 1:T
             num = den - f(rec,:);
 
             % build hessian
-            h(1:Na,agent) = h(1:Na,agent) + w(rec,:)*(num/den*(u(agent,rec)*u(:,rec)+v(agent,rec)*v(:,rec)) + f(rec,:)/den^3*(u(agent,rec)*u(:,rec)'*a(:,t)+v(agent,rec)*v(:,rec)'*a(:,t))*(u(:,rec)*u(:,rec)'*a(:,t)+v(:,rec)*v(:,rec)'*a(:,t)));
             h(1:Na,agent) = h(1:Na,agent) + w(rec,:)*(num/den*(u(agent,rec)*u(:,rec)+v(agent,rec)*v(:,rec)) + f(rec,:)/den^3*(u(agent,rec)*u(:,rec)'*a(:,t)+v(agent,rec)*v(:,rec)'*a(:,t))*(u(:,rec)*u(:,rec)'*a(:,t)+v(:,rec)*v(:,rec)'*a(:,t)));
             h(1:Na,agent+Na) = h(1:Na,agent+Na) + w(rec,:)*(num/den*(-u(agent,rec)*a(:,t).*v(:,rec)-a(:,t)'*u(:,rec)*v(:,rec).*I(:,agent)+v(agent,rec)*a(:,t).*u(:,rec)+a(:,t)'*v(:,rec)*u(:,rec).*I(:,agent))...
                 + f(rec,:)/den^3*((u(agent,rec)*u(:,rec)'*a(:,t)+v(agent,rec)*v(:,rec)'*a(:,t)))*(-a(:,t)'*u(:,rec)*a(:,t).*v(:,rec)+a(:,t)'*v(:,rec)*a(:,t).*u(:,rec)));
@@ -114,7 +116,7 @@ for t = 1:T
     grad_norm(:,t) = norm(grad(:,t));                 % take l2 norm of grad
 
     % now calculate the true rec'd AF under the effect of noise
-    noisyGamma = normrnd(1,.2,Na,Ns);
+    noisyGamma = normrnd(1,.1,Na,Ns);
     for agent = 1:Na
         for rec = 1:Ns
             noisyU(agent,rec) = noisyGamma(agent,rec)/(d(agent,rec)^(mu/2))*cos(alpha(agent,t)+zeta(agent,rec));
@@ -145,7 +147,7 @@ for t = 1:T
         ylabel("Beampattern (dB)")
         title('Noisy Beampattern')
         grid on;
-        % set(gca, 'FontSize', 24); 
+        set(gca, 'FontSize', 12); 
         hold off;
 
         figure(30303);
@@ -154,25 +156,25 @@ for t = 1:T
         ylabel("||E(t)|| (dB)")
         xlabel("t")
         grid on;
-        set(gca, 'FontSize', 24)
+        set(gca, 'FontSize', 12)
 
-        figure(40404);
-        plot(tht,AFDB(:,t), 'g', 'LineWidth', 3); hold on;
-        plot(tht, 20*log10(f/max(f)), '--k', 'LineWidth', 3);
-        xlabel("\theta (rad)")
-        ylabel("Beampattern (dB)")
-        title('Noiseless Beampattern')
-        grid on;
-        % set(gca, 'FontSize', 24); 
-        hold off;
-
-        figure(50505);
-        plot(movmean(errorDB(1:t),25), 'LineWidth', 3)
-        title("Noiseless Windowed Average of Error (k = 25)")
-        ylabel("||E(t)|| (dB)")
-        xlabel("t")
-        grid on;
-        set(gca, 'FontSize', 24)
+        % figure(40404);
+        % plot(tht,AFDB(:,t), 'g', 'LineWidth', 3); hold on;
+        % plot(tht, 20*log10(f/max(f)), '--k', 'LineWidth', 3);
+        % xlabel("\theta (rad)")
+        % ylabel("Beampattern (dB)")
+        % title('Noiseless Beampattern')
+        % grid on;
+        % % set(gca, 'FontSize', 24); 
+        % hold off;
+        % 
+        % figure(50505);
+        % plot(movmean(errorDB(1:t),25), 'LineWidth', 3)
+        % title("Noiseless Windowed Average of Error (k = 25)")
+        % ylabel("||E(t)|| (dB)")
+        % xlabel("t")
+        % grid on;
+        % set(gca, 'FontSize', 24)
 
         drawnow
     end

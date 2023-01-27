@@ -2,7 +2,7 @@ clc
 % rng('default')
 
 %%
-T = 5e3;                   % run for 1e3 iterations
+T = 1e4;                   % run for 1e3 iterations
 I = eye(N_a);               % for later use
 a = zeros(N_a,T);           % array of amplitude guesses
 alpha = zeros(N_a,T);       % array of phase guesses
@@ -27,7 +27,7 @@ w = 1./sqrt(f);             % init penalty weights
 w = (w/sum(w));               % normalize penalty weights
 
 %% test to uniformly weight receivers - helps a bit with noise
-%  w = .01*ones(size(f));
+ w = .01*ones(size(f));
 % w = c.^2;
 % w = c./sum(c);
 
@@ -106,7 +106,7 @@ for t=1:T-1                % for each iteration
     alpha(:,t+1) = x(N_a+1:2*N_a,:);
     grad_norm(:,t) = norm(grad(:,t));                 % take l2 norm of grad
 
-    gamma_ch = normrnd(1,0.1,N_a,N_s);                % channel fading parameter is randomized at each step
+    gamma_ch = gamma;normrnd(1,0.1,N_a,N_s);                % channel fading parameter is randomized at each step
     %% disable noise
 %         gamma_ch = gamma;
     %% 
