@@ -28,6 +28,7 @@ N_d = 5;                                       % Number of elements of array
 lambda = 3e8/f;                               % wave length
 d = lambda/4;                                 % Inter-element spacing
 k = (2*pi)./lambda;
+Num_samples = max(size(theta));
 % channel parameters
 gamma = 1;
 mu = 2;
@@ -68,7 +69,7 @@ rho = 1.5*d;
 
 % True parameters (i.e., initial conditions)
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-a = 100*ones(1,N_a);
+% a = 100*ones(1,N_a);
 
 % Am = abs(a + 10*randn(1,N_a));                        % element amplitude
 % rm = zeros(2,N_a);                                    % element locations

@@ -1,8 +1,8 @@
 clear all; close all;
 % algorithm params
 f0 = 40e6;           % beam freq
-Na = 30;             % num Tx
-Nb = 8;              % num Tx for building signal
+Na = 33;             % num Tx
+Nb = 12;              % num Tx for building signal
 lambda = 3e8/f0;     % wavelength
 d = lambda/2;       % interagent spacing
 
@@ -21,18 +21,29 @@ r = []; a0 = []; alpha0 = [];
 c = 1:ceil(Na/2); c = [c, flip(c)];
 % setup disance bounds for Rxs
 dMin = -10*d; dMax = 10*d;
-for i = 1:Nb
+for i = 1:Na
 
     r(:,i) = (dMax - dMin)*rand(2,1) + dMin;
-    a(i) = c(i)^3;
-    alpha(i) = c(i)*pi/8;
+    % a0(i) = c(i)^3;
+    % alpha0(i) = c(i)*pi/8;
 
 end
+% make intial amplitude and phase guess
+a0 = 100*rand(Na,1);
+alpha0 = rand(Na,1);
 % get desired array factor
-AFd = GetArrayFactor(Nb,r,a0,alpha0,gamma,mu,nu,rhoCh,theta);
+b = 1:ceil(Nb/2); b = [b, flip(b)];
+for i = 1:Nb
+
+    rb(:,i) = [0, i*d/2];
+    a(i) = b(i);
+    alpha(i) = b(i)*pi/8;
+
+end
+AFd = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,theta);
 f = abs(AFd).';
 % sample the entire array factor
-AFdCh = GetArrayFactor(Nb,r,a0,alpha0,gamma,mu,nu,rhoCh,thetaCh);
+AFdCh = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,thetaCh);
 fCh = abs(AFdCh).';
 %plot array factor
 figure(1);
@@ -62,6 +73,18 @@ scatter(rho.*cos(theta),rho.*sin(theta), 'k', 'LineWidth', 3)
 legend("Tx", "Rx")
 
 %% run optimizer
-a0 = 100*rand(Na,1);
-alpha0 = rand(Na,1);
-ipgPhaseMag(1e4,f,r,rho,theta,a0,alpha0,w,f0)
+% first run SBL to prune agents
+KK = Main_SBL(r, f.', Na, theta);
+
+% plot the agent array after pruning
+figure(41);
+scatter(r(1,abs(KK)>0),r(2,abs(KK)>0),'b','LineWidth',4); hold on;
+scatter(r(1,abs(KK)==0),r(2,abs(KK)==0),'r','LineWidth',4)
+title("Agents After Pruning")
+legend("Kept Agents", "Pruned Agents")
+grid on
+
+% rebuild agent array 
+
+% then run IPG to further optimize weights
+% ipgPhaseMag(1e4,f,r,rho,theta,a0,alpha0,w,f0)

@@ -147,7 +147,7 @@ for t = 1:T
         ylabel("Beampattern (dB)")
         title('Noisy Beampattern')
         grid on;
-        set(gca, 'FontSize', 12); 
+        set(gca, 'FontSize', 12);
         hold off;
 
         figure(30303);
@@ -165,9 +165,9 @@ for t = 1:T
         % ylabel("Beampattern (dB)")
         % title('Noiseless Beampattern')
         % grid on;
-        % % set(gca, 'FontSize', 24); 
+        % % set(gca, 'FontSize', 24);
         % hold off;
-        % 
+        %
         % figure(50505);
         % plot(movmean(errorDB(1:t),25), 'LineWidth', 3)
         % title("Noiseless Windowed Average of Error (k = 25)")
@@ -176,7 +176,24 @@ for t = 1:T
         % grid on;
         % set(gca, 'FontSize', 24)
 
-        drawnow
+
     end
 end
+figure(60606)                                   % plot
+plot(tht,noisyAFDB(:,1), 'g', 'LineWidth', 5); hold on
+plot(tht,noisyAFDB(:,T/10), 'r', 'LineWidth', 5)
+plot(tht,noisyAFDB(:,T/5), 'b', 'LineWidth', 5)
+plot(tht,noisyAFDB(:,T/2), 'c', 'LineWidth', 5)
+plot(tht,noisyAFDB(:,T), 'm', 'LineWidth', 5)
+set(gca, 'FontSize', 35)
+plot(tht,20*log10(f/max(f)), '--k', 'LineWidth', 3)
+title("Beampattern Matching with Noise")
+legend("t = 0", "t = " + string(T/10), "t = " + string(T/5), "t = " + string(T/2), "t = " + string(T), "Desired", "Location", "Best")
+xlabel('\theta (radian)')
+ylabel('radiation pattern (dB)')
+set(gca, 'LineWidth', 5, 'FontSize', 35)
+drawnow
+grid on
+
+drawnow
 end

@@ -1,8 +1,8 @@
 clear all; close all;
 % algorithm params
 f0 = 40e6;           % beam freq
-Na = 21;             % num Tx
-Nb = 9;              % num Tx for building signal
+Na = 33;             % num Tx
+Nb = 36;              % num Tx for building signal
 lambda = 3e8/f0;     % wavelength
 d = lambda/2;       % interagent spacing
 
@@ -36,7 +36,7 @@ b = 1:ceil(Nb/2); b = [b, flip(b)];
 for i = 1:Nb
 
     rb(:,i) = [0, i*d/2];
-    a(i) = b(i)^3;
+    a(i) = b(i);
     alpha(i) = b(i)*pi/8;
 
 end
@@ -73,4 +73,21 @@ scatter(rho.*cos(theta),rho.*sin(theta), 'k', 'LineWidth', 3)
 legend("Tx", "Rx")
 
 %% run optimizer
-ipgPhaseMag(1e4,f,r,rho,theta,a0,alpha0,w,f0)
+% first run SBL to prune agents
+KK = Main_SBL(r, f.', Na, theta);
+
+% plot the agent array after pruning
+figure(41);
+scatter(r(1,abs(KK)>0),r(2,abs(KK)>0),'b','LineWidth',4); hold on;
+scatter(r(1,abs(KK)==0),r(2,abs(KK)==0),'r','LineWidth',4)
+title("Agents After Pruning")
+legend("Kept Agents", "Pruned Agents")
+grid on
+
+% rebuild agent array to only have agents which survived pruning
+rPruned = r(:, abs(KK) > 0);
+a0 = abs(KK(abs(KK) > 0));
+alpha0 = angle(KK(abs(KK) > 0));
+
+% then run IPG to further optimize weights
+ipgPhaseMag(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
