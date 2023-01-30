@@ -20,7 +20,7 @@ theta = linspace(0,7*pi/8,Ns);
 r = []; a0 = []; alpha0 = [];
 c = 1:ceil(Na/2); c = [c, flip(c)];
 % setup disance bounds for Rxs
-dMin = -10*d; dMax = 10*d;
+dMin = -4*d; dMax = 4*d;
 for i = 1:Na
 
     r(:,i) = (dMax - dMin)*rand(2,1) + dMin;

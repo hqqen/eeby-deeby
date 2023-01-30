@@ -135,7 +135,7 @@ for t = 1:T
     noisyAFDB(:,t) = 20*log10(noisyAF(:,t)/max(noisyAF(:,t)));
     noisyErrorDB(t) = norm(noisyAFDB(:,t)-20*log10(f/max(f)),1)/Ns;
     if isnan(noisyErrorDB(t))
-        spritnf("Algorithm has Diverged!")
+        sprintf("Algorithm has Diverged!")
         break
     end
     if ~mod(t,100)
@@ -191,7 +191,7 @@ title("Beampattern Matching with Noise")
 legend("t = 0", "t = " + string(T/10), "t = " + string(T/5), "t = " + string(T/2), "t = " + string(T), "Desired", "Location", "Best")
 xlabel('\theta (radian)')
 ylabel('radiation pattern (dB)')
-set(gca, 'LineWidth', 5, 'FontSize', 35)
+set(gca, 'LineWidth', 5, 'FontSize', 12)
 drawnow
 grid on
 
