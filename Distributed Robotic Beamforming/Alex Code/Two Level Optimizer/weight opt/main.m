@@ -20,7 +20,7 @@ theta = linspace(0,7*pi/8,Ns);
 r = []; a0 = []; alpha0 = [];
 c = 1:ceil(Na/2); c = [c, flip(c)];
 % setup disance bounds for Rxs
-dMin = -10*d; dMax = 10*d;
+dMin = -5*d; dMax = 5*d;
 for i = 1:Na
 
     r(:,i) = (dMax - dMin)*rand(2,1) + dMin;
@@ -78,20 +78,20 @@ r = [17.8322933400355	-0.810765386231672	-21.3761523566949	-11.6788480302041	-33
 
 %% run optimizer
 % first run SBL to prune agents
-% KK = Main_SBL(r, f.', Na, theta);
-% 
-% % plot the agent array after pruning
-% figure(41);
-% scatter(r(1,abs(KK)>0),r(2,abs(KK)>0),'b','LineWidth',4); hold on;
-% scatter(r(1,abs(KK)==0),r(2,abs(KK)==0),'r','LineWidth',4)
-% title("Agents After Pruning")
-% legend("Kept Agents", "Pruned Agents")
-% grid on
+KK = Main_SBL(r, f.', Na, theta);
+
+% plot the agent array after pruning
+figure(41);
+scatter(r(1,abs(KK)>0),r(2,abs(KK)>0),'b','LineWidth',4); hold on;
+scatter(r(1,abs(KK)==0),r(2,abs(KK)==0),'r','LineWidth',4)
+title("Agents After Pruning")
+legend("Kept Agents", "Pruned Agents")
+grid on
 
 % rebuild agent array to only have agents which survived pruning
-rPruned = r;%r(:, abs(KK) > 0);
-a0 = 100*rand(Na,1);%abs(KK(abs(KK) > 0));
-alpha0 = rand(Na,1);%angle(KK(abs(KK) > 0));
-
-% then run IPG to further optimize weights
-ipgPhaseMag(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
+% rPruned = r(:, abs(KK) > 0);
+% a0 = abs(KK(abs(KK) > 0));100*rand(Na,1);
+% alpha0 = angle(KK(abs(KK) > 0));rand(Na,1);
+% 
+% % then run IPG to further optimize weights
+% ipgPhaseMag(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
