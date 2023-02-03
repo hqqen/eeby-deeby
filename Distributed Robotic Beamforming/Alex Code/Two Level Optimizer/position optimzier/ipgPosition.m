@@ -118,9 +118,9 @@ for t = 1:T
             pyy(agent,agent) = pyy(agent,agent) + (1/p(agent)) - (y(agent) - y0(agent))*py(agent)/(p(agent)^2);
             pxy(agent,agent) = pxy(agent,agent) - px(agent)*py(agent)/p(agent);
             % are these three right? they might need to be diagonal
-            % sigmaxx(agent,rec) = dxx(agent,agent);
-            % sigmayy(agent,rec) = dyy(agent,agent);
-            % sigmaxy(agent,rec) = dxy(agent,agent);
+            sigmaxx(agent,agent) = dxx(agent,agent);
+            sigmayy(agent,agent) = dyy(agent,agent);
+            sigmaxy(agent,agent) = dxy(agent,agent);
         end
     end
     simgaxx = dxx; sigmayy = dyy; sigmaxy = dxy;
@@ -128,19 +128,20 @@ for t = 1:T
     Lx = zeros(Na,Ns); Ly = zeros(Na,Ns);
     for rec = 1:Ns
         for agent = 1:Na
-            Lx(agent) = Lx(agent) + (a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dx(agent)/d(agent,rec) + sigmax(agent,rec));
-            Ly(agent) = Ly(agent) + (a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dy(agent)/d(agent,rec) + sigmay(agent,rec));
+            Lx(agent) = Lx(agent) + abs((a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dx(agent)/d(agent,rec) + sigmax(agent,rec)));
+            Ly(agent) = Ly(agent) + abs((a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dy(agent)/d(agent,rec) + sigmay(agent,rec)));
         end
     end
     % build second derivs for hessian calculaiton
+    Lxx = zeros(Na,Na); Lyy = zeros(Na,Na); Lxy = zeros(Na,Na);
     for rec = 1:Ns
         for agent = 1:Na
-            % Lxx(agent,agent) = 
-            % Lyy(agnet,agent) = 
-            % Lxy(agent,agent) = 
+            Lxx(agent,agent) = Lxx(agent,agent) + (w(rec)/2)*abs(a(agent)*gamma(agent,rec)/d(agent,rec)*exp(1i*sigma(agent,rec))*(-dxx(agent,agent)/d(agent,rec) + 2*dx(agent)^2/d(agent,rec)^2 - 2*dx(agent)*sigmax(agent,rec)/d(agent,rec) + sigmaxx(agent,agent) + sigmax(agent)^2));
+            Lyy(agent,agent) = Lyy(agent,agent) + (w(rec)/2)*abs(a(agent)*gamma(agent,rec)/d(agent,rec)*exp(1i*sigma(agent,rec))*(-dyy(agent,agent)/d(agent,rec) + 2*dy(agent)^2/d(agent,rec)^2 - 2*dy(agent)*sigmay(agent,rec)/d(agent,rec) + sigmayy(agent,agent) + sigmay(agent)^2));
+            Lxy(agent,agent) = Lxy(agent,agent) + (w(rec)/2)*abs(a(agent)*gamma(agent,rec)/d(agent,rec)*exp(1i*sigma(agent,rec))*(-dy(agent)*sigmax(agent,rec)/d(agent,rec) - dx(agent)*sigmay(agent,rec)/d(agent,rec) + sigmax(agent,rec)*sigmay(agent,rec) - dxy(agent,agent)/d(agent,rec) + 2*dx(agent)*dy(agent)/d(agent,rec)^2 + sigmaxy(agent,agent)));
         end
     end
-
+    h = [Lxx, Lxy; Lxy.', Lyy];
     % update GD parameter(s)
     eps1 = 1/(max(eig(h)) + beta);
     % run GD update
