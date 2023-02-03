@@ -128,16 +128,13 @@ for t = 1:T
     Lx = zeros(Na,Ns); Ly = zeros(Na,Ns);
     for rec = 1:Ns
         for agent = 1:Na
-            Lx(agent) = Lx(agent) + (a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dx(agent)/d(agent,rec) + sigmax(agent,rec));
-            Ly(agent) = Ly(agent) + (a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dy(agent)/d(agent,rec) + sigmay(agent,rec));
+
         end
     end
     % build second derivs for hessian calculaiton
     for rec = 1:Ns
         for agent = 1:Na
-            % Lxx(agent,agent) = 
-            % Lyy(agnet,agent) = 
-            % Lxy(agent,agent) = 
+
         end
     end
 
