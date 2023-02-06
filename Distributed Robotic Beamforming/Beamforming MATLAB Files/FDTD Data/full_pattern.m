@@ -77,7 +77,7 @@ for i=1:N_s
     af(i,:) = den_ch;
 end
 af_db = 20*log10(af/max(af));
-plot3(xrec,yrec,af_db, 'LineWidth', 3)
+% plot3(xrec,yrec,af_db, 'LineWidth', 3)
 grid on
 hold on
 scatter3(xm,ym,-40*ones(6,1), 'LineWidth', 3)
