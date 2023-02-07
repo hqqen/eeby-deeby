@@ -14,8 +14,6 @@ function [amp, alpha, AF, noisyAF] = ipgPhaseMag(T,f,r,rho,tht,a0,alpha0,w,f0)
 % amp - 1xNa vector of cplx transmitter amplitudes
 % alpha - 1xNa vector of transmitte rphase offsets
 
-% destabilization is happening in 3rd row
-
 % setup algorithm parameters
 eps1 = 1e-2; % GD rate for precond matrix
 eps2 = 1;    % parameter GD rate
@@ -173,7 +171,7 @@ for t = 1:T
     end
     noisyAFDB(:,t) = 20*log10(noisyAF(:,t)/max(noisyAF(:,t)));
     noisyErrorDB(t) = norm(noisyAFDB(:,t)-20*log10(f/max(f)),1)/Ns;
-    if isnan(noisyErrorDB(t)) | any(isnan(x)) | any(isnan(y))
+    if isnan(noisyErrorDB(t))
         sprintf("Algorithm has Diverged!")
         break
     end
@@ -215,7 +213,7 @@ for t = 1:T
         % grid on;
         % set(gca, 'FontSize', 24)
 
-        figure(60606); hold off
+        xfigure(60606); hold off
         scatter(x,y,'b','LineWidth',4); hold on
         scatter(rho.*cos(tht),rho.*sin(tht),'k','LineWidth',4)
         title("Agent Positions")

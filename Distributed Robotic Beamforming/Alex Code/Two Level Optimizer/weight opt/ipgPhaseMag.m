@@ -49,6 +49,13 @@ end
 
 % optimizer loop
 for t = 1:T
+    for agent = 1:Na
+    for rec = 1:Ns
+        d(agent,rec) = norm( [x(agent,:);y(agent,:)] - rho(rec,:).*[cos(tht(rec,:));sin(tht(rec,:))]);
+        zeta(agent,rec) = k*x(agent,:)*cos(tht(rec,:)) + k*y(agent,:)*sin(tht(rec,:)) + k*d(agent,rec);
+    end
+    end
+    rho(1) = rho(1) + .005;
     %clear parameters udated stepwise
     u = zeros(Na,Ns);
     v = zeros(Na,Ns);
@@ -110,9 +117,9 @@ for t = 1:T
     % run GD update
     K = K - eps1*(h*K+beta*K-eye(2*Na));         % mass update preconditioner (using eqn 5, not 12)
     grad(:,t) = [sum(ga,2);sum(galpha,2)];            % agent-wise gradient is summed
-    x = [a(:,t);alpha(:,t)] - eps2*K*grad(:,t);   % gradient update (eqn 4)
-    a(:,t+1) = x(1:Na,:);                            % split gradient update to amplitude and phase
-    alpha(:,t+1) = x(Na+1:2*Na,:);
+    xGrad = [a(:,t);alpha(:,t)] - eps2*K*grad(:,t);   % gradient update (eqn 4)
+    a(:,t+1) = xGrad(1:Na,:);                            % split gradient update to amplitude and phase
+    alpha(:,t+1) = xGrad(Na+1:2*Na,:);
     grad_norm(:,t) = norm(grad(:,t));                 % take l2 norm of grad
 
     % now calculate the true rec'd AF under the effect of noise
