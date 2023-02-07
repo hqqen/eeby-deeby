@@ -49,13 +49,13 @@ end
 
 % optimizer loop
 for t = 1:T
-    for agent = 1:Na
-    for rec = 1:Ns
-        d(agent,rec) = norm( [x(agent,:);y(agent,:)] - rho(rec,:).*[cos(tht(rec,:));sin(tht(rec,:))]);
-        zeta(agent,rec) = k*x(agent,:)*cos(tht(rec,:)) + k*y(agent,:)*sin(tht(rec,:)) + k*d(agent,rec);
-    end
-    end
-    rho(1) = rho(1) + .005;
+    % for agent = 1:Na
+    % for rec = 1:Ns
+    %     d(agent,rec) = norm( [x(agent,:);y(agent,:)] - rho(rec,:).*[cos(tht(rec,:));sin(tht(rec,:))]);
+    %     zeta(agent,rec) = k*x(agent,:)*cos(tht(rec,:)) + k*y(agent,:)*sin(tht(rec,:)) + k*d(agent,rec);
+    % end
+    % end
+    % rho(1) = rho(1) + .005;
     %clear parameters udated stepwise
     u = zeros(Na,Ns);
     v = zeros(Na,Ns);
