@@ -91,7 +91,7 @@ for t=1:T-1
 end
 
 %%
-figure(1)
+figure(3)
 plot(af_db(1,:),'LineWidth', 5)
 hold on
 xlabel('iteration t')

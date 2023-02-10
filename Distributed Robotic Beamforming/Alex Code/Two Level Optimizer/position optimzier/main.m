@@ -100,4 +100,5 @@ a0 = 100*rand(Na,1);%abs(KK(abs(KK) > 0));
 alpha0 = rand(Na,1);%angle(KK(abs(KK) > 0));
 
 % then run IPG to further optimize weights
-ipgPosition(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
+% ipgPositionFix(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
+ipgPositionFix(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)

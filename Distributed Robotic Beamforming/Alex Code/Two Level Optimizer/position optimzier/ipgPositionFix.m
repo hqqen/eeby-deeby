@@ -24,8 +24,8 @@ Na = length(r);     % num agents
 Ns = length(rho);   % num points to sample over
 gamma = ones(Na,Ns);% placeholder no noise gamma
 mu = 2;             % path loss exponent
-a = ones(Na,T).*reshape(a0,[Na,1]);
-alpha = ones(Na,T).*reshape(alpha0,[Na,1]);
+a = reshape(a0,[Na,1]);
+alpha = reshape(alpha0,[Na,1]);
 r = reshape(r,2,max(size(r)));
 x = r(1,:).';         % split agent posn vector r into x and y posns
 x0 = x;
@@ -40,15 +40,7 @@ w = reshape(w,max(size(w)), 1);
 f = reshape(f, max(size(f)), 1);
 
 
-% initialize channel fading parameters
-d = zeros(Na,Ns);       % transmitter - reciever distance
-zeta = zeros(Na,Ns);    % exponent for finding AF
-for agent = 1:Na
-    for rec = 1:Ns
-        d(agent,rec) = norm( [x(agent,:);y(agent,:)] - rho(rec,:).*[cos(tht(rec,:));sin(tht(rec,:))]);
-        zeta(agent,rec) = k*x(agent,:)*cos(tht(rec,:)) + k*y(agent,:)*sin(tht(rec,:)) + k*d(agent,rec);
-    end
-end
+
 
 % optimizer loop
 for t = 1:T
@@ -66,82 +58,57 @@ for t = 1:T
     % Lyy = zeros(Na);
     % Lxy = zeros(Na);
     % exponent = zeros(Na,Ns);
-%     gx = zeros(Na,Ns);
-%     gy = zeros(Na,Ns);
+    %     gx = zeros(Na,Ns);
+    %     gy = zeros(Na,Ns);
     h = zeros(2*Na);
+
+    % initialize channel fading parameters
+    d = zeros(Na,Ns);       % transmitter - reciever distance
+    zeta = zeros(Na,Ns);    % exponent for finding AF
+    for agent = 1:Na
+        for rec = 1:Ns
+            d(agent,rec) = norm( [x(agent,:);y(agent,:)] - rho(rec,:).*[cos(tht(rec,:));sin(tht(rec,:))]);
+            zeta(agent,rec) = k*x(agent,:)*cos(tht(rec,:)) + k*y(agent,:)*sin(tht(rec,:)) + k*d(agent,rec);
+        end
+    end
 
     % update the noiseless channel parameters to send to server
     for agent = 1:Na
         for rec = 1:Ns
-            u(agent,rec) = gamma(agent,rec)./(d(agent,rec).^(mu/2)).*cos(alpha(agent,t) + zeta(agent,rec));
-            v(agent,rec) = gamma(agent,rec)./(d(agent,rec).^(mu/2)).*sin(alpha(agent,t) + zeta(agent,rec));
+            u(agent,rec) = gamma(agent,rec)./(d(agent,rec).^(mu/2)).*cos(alpha(agent) + zeta(agent,rec));
+            v(agent,rec) = gamma(agent,rec)./(d(agent,rec).^(mu/2)).*sin(alpha(agent) + zeta(agent,rec));
         end
     end
 
-    % start building gradient and hessian for algorithm
-    % get 1st deriv of dist to Rxs and dist traveled by agents
-    % update distance traveled by each agent
-    p = zeros(Na,1);
-    for agent = 1:Na
-        p(agent) = sqrt((x(agent) - x0(agent))^2 + (y(agent) - y0(agent))^2);
-    end
-
-    % build exponent
+    % find derivatives of channel params
+    % these vectors need to be 2*Na each (2 rows, Na cols) so their square
+    % is Na*Na to keep dimensionality correct
+    % the actual multiplicaiton will be done row-wise to give a 2Na*2Na
+    % matrix (shaped like a hessian I think - [u^2, u*v; u*v, v^2]?)
+    du = zeros(Na,2); dv = zeros(Na,2);
     for agent = 1:Na
         for rec = 1:Ns
-            sigma(agent,rec) = alpha(agent) + k*(x(agent)*cos(tht(rec)) + y(agent)*sin(rec) + d(agent,rec));
+            dux(agent,rec) = a(agent)*-(mu*cos(alpha(agent) + zeta(agent,rec))*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))/(4*d(agent,rec)^(2*mu/2)) - (sin(alpha(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + ((k*(2*x(agent) - 2*rho(rec)*cos(tht(rec))))/(d(agent,rec)^(mu/2)))))/d(agent,rec)^(mu/2));
+            duy(agent,rec) = a(agent)*-(mu*cos(alpha(agent) + zeta(agent,rec))*(2*y(agent) - 2*rho(rec)*sin(tht(rec)))/(4*d(agent,rec)^(2*mu/2)) - (sin(alpha(agent) + zeta(agent,rec))*(k*sin(tht(rec)) + ((k*(2*y(agent) - 2*rho(rec)*sin(tht(rec))))/(d(agent,rec)^(mu/2)))))/d(agent,rec)^(mu/2));
+            dvx(agent,rec) = a(agent)*-(mu*sin(alpha(agent) + zeta(agent,rec))*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))/(4*d(agent,rec)^(2*mu/2)) + (cos(alpha(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + ((k*(2*x(agent) - 2*rho(rec)*cos(tht(rec))))/(d(agent,rec)^(mu/2)))))/d(agent,rec)^(mu/2));
+            dvy(agent,rec) = a(agent)*-(mu*sin(alpha(agent) + zeta(agent,rec))*(2*y(agent) - 2*rho(rec)*sin(tht(rec)))/(4*d(agent,rec)^(2*mu/2)) + (cos(alpha(agent) + zeta(agent,rec))*(k*sin(tht(rec)) + ((k*(2*y(agent) - 2*rho(rec)*sin(tht(rec))))/(d(agent,rec)^(mu/2)))))/d(agent,rec)^(mu/2));
         end
     end
+    % build gradients
+    for rec = 1:Ns
+        % find the rec'd AF and the respective error
+        recAF = 0;
+        for agent = 1:Na
+            recAF = recAF + a(agent,t)*(u(agent,rec) + 1i*v(agent,rec));
+        end
+        recAF = abs(recAF);
+        recErr = recAF - f(rec);
+        %  build the actual gradient
+        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:,t)'*u(:,rec))*dux(:,rec) + (a(:,t)'*v(:,rec))*dvx(:,rec)));
+        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:,t)'*u(:,rec))*duy(:,rec) + (a(:,t)'*v(:,rec))*dvy(:,rec)));
+    end
+    % get 2nd derivaives
 
-    dx = zeros(Na,1); dy = zeros(Na,1); px = zeros(Na,1); py = zeros(Na,1); sigmax = zeros(Na); sigmay = zeros(Na);
-    for rec = 1:Ns
-        for agent = 1:Na
-            dx(agent) = dx(agent) + (x(agent) - rho(rec)*cos(tht(rec)))/d(agent,rec);
-            dy(agent) = dy(agent) + (y(agent) - rho(rec)*sin(tht(rec)))/d(agent,rec);
-            px(agent) = (x(agent) - x0(agent))/p(agent);
-            py(agent) = (y(agent) - y0(agent))/p(agent);
-            sigmax(agent,rec) = k*cos(tht(rec)) + dx(agent);
-            sigmay(agent,rec) = k*sin(tht(rec)) + dy(agent);
-        end
-    end
-    % get 2nd deriv of dist to Rxs and dist traveled by agents
-    % because the distance from agent agent to a Rx and its dist traveled
-    % is not effected by the motion of other agents these 2nd derives
-    % end up being Na*Na diag'l matrices
-    dxx = eye(Na); dyy = eye(Na); dxy = eye(Na); pxx = eye(Na); pyy = eye(Na); pxy = eye(Na); sigmaxx = zeros(Na); sigmayy = zeros(Na); sigmaxy = zeros(Na);
-    for rec = 1:Ns
-        for agent = 1:Na
-            dxx(agent,agent) = dxx(agent,agent) + (1/d(agent,rec)) - (x(agent) - rho(rec)*cos(tht(rec)))*dx(agent)/(d(agent,rec)^2);
-            dyy(agent,agent) = dyy(agent,agent) + (1/d(agent,rec)) - (y(agent) - rho(rec)*sin(tht(rec)))*dy(agent)/(d(agent,rec)^2);
-            dxy(agent,agent) = dxy(agent,agent) - dx(agent)*dy(agent)/d(agent,rec);
-            pxx(agent,agent) = pxx(agent,agent) + (1/p(agent)) - (x(agent) - x0(agent))*px(agent)/(p(agent)^2);
-            pyy(agent,agent) = pyy(agent,agent) + (1/p(agent)) - (y(agent) - y0(agent))*py(agent)/(p(agent)^2);
-            pxy(agent,agent) = pxy(agent,agent) - px(agent)*py(agent)/p(agent);
-            % are these three right? they might need to be diagonal
-            sigmaxx(agent,agent) = dxx(agent,agent);
-            sigmayy(agent,agent) = dyy(agent,agent);
-            sigmaxy(agent,agent) = dxy(agent,agent);
-        end
-    end
-    simgaxx = dxx; sigmayy = dyy; sigmaxy = dxy;
-    % build first derivatives for grad calculation
-    Lx = zeros(Na,Ns); Ly = zeros(Na,Ns);
-    for rec = 1:Ns
-        for agent = 1:Na
-            Lx(agent) = Lx(agent) + abs((a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dx(agent)/d(agent,rec) + sigmax(agent,rec)));
-            Ly(agent) = Ly(agent) + abs((a(agent)*gamma(agent,rec)/d(agent,rec))*exp(1j*sigma(agent,rec))*(-dy(agent)/d(agent,rec) + sigmay(agent,rec)));
-        end
-    end
-    % build second derivs for hessian calculaiton
-    Lxx = zeros(Na,Na); Lyy = zeros(Na,Na); Lxy = zeros(Na,Na);
-    for rec = 1:Ns
-        for agent = 1:Na
-            Lxx(agent,agent) = Lxx(agent,agent) + (w(rec)/2)*abs(a(agent)*gamma(agent,rec)/d(agent,rec)*exp(1i*sigma(agent,rec))*(-dxx(agent,agent)/d(agent,rec) + 2*dx(agent)^2/d(agent,rec)^2 - 2*dx(agent)*sigmax(agent,rec)/d(agent,rec) + sigmaxx(agent,agent) + sigmax(agent)^2));
-            Lyy(agent,agent) = Lyy(agent,agent) + (w(rec)/2)*abs(a(agent)*gamma(agent,rec)/d(agent,rec)*exp(1i*sigma(agent,rec))*(-dyy(agent,agent)/d(agent,rec) + 2*dy(agent)^2/d(agent,rec)^2 - 2*dy(agent)*sigmay(agent,rec)/d(agent,rec) + sigmayy(agent,agent) + sigmay(agent)^2));
-            Lxy(agent,agent) = Lxy(agent,agent) + (w(rec)/2)*abs(a(agent)*gamma(agent,rec)/d(agent,rec)*exp(1i*sigma(agent,rec))*(-dy(agent)*sigmax(agent,rec)/d(agent,rec) - dx(agent)*sigmay(agent,rec)/d(agent,rec) + sigmax(agent,rec)*sigmay(agent,rec) - dxy(agent,agent)/d(agent,rec) + 2*dx(agent)*dy(agent)/d(agent,rec)^2 + sigmaxy(agent,agent)));
-        end
-    end
-    h = [Lxx, Lxy; Lxy.', Lyy];
     % update GD parameter(s)
     eps1 = 1/(max(eig(h)) + beta);
     % run GD update
@@ -156,15 +123,15 @@ for t = 1:T
     noisyGamma = normrnd(1,.1,Na,Ns);
     for agent = 1:Na
         for rec = 1:Ns
-            noisyU(agent,rec) = noisyGamma(agent,rec)/(d(agent,rec)^(mu/2))*cos(alpha(agent,t)+zeta(agent,rec));
-            noisyV(agent,rec) = noisyGamma(agent,rec)/(d(agent,rec)^(mu/2))*sin(alpha(agent,t)+zeta(agent,rec));
+            noisyU(agent,rec) = noisyGamma(agent,rec)/(d(agent,rec)^(mu/2))*cos(alpha(agent)+zeta(agent,rec));
+            noisyV(agent,rec) = noisyGamma(agent,rec)/(d(agent,rec)^(mu/2))*sin(alpha(agent)+zeta(agent,rec));
         end
     end
     % find true array factor
     for rec = 1:Ns
         den = 0;
         for agent = 1:Na
-            den = den + a(agent,t)*(noisyU(agent,rec)+1i*noisyV(agent,rec));
+            den = den + a(agent)*(noisyU(agent,rec)+1i*noisyV(agent,rec));
         end
         noisyAF(rec,t) = abs(den);
 
@@ -218,7 +185,7 @@ for t = 1:T
         scatter(rho.*cos(tht),rho.*sin(tht),'k','LineWidth',4)
         title("Agent Positions")
         xlabel("x (m)"); ylabel("y (m)");
-%         exportgraphics(gcf,'agentMovementNoSBL.gif','Append',true);
+        %         exportgraphics(gcf,'agentMovementNoSBL.gif','Append',true);
         grid on
 
 
