@@ -104,16 +104,16 @@ for t = 1:T
         recAF = abs(recAF);
         recErr = recAF - f(rec);
         %  build the actual gradient
-        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:,t)'*u(:,rec))*dux(:,rec) + (a(:,t)'*v(:,rec))*dvx(:,rec)));
-        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:,t)'*u(:,rec))*duy(:,rec) + (a(:,t)'*v(:,rec))*dvy(:,rec)));
+        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*dux(:,rec) + (a(:)'*v(:,rec))*dvx(:,rec)));
+        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*duy(:,rec) + (a(:)'*v(:,rec))*dvy(:,rec)));
     end
     % get 2nd derivaives of u and v
-    for agent = 1:Na
-        for rec = 1:Ns
-            uxx(agent,rec) = -a(agent)*((-mu*sin(a(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + k*(x(agent) - (rho(rec)*cos(tht(rec)))/d(agent,rec))*(2*x(agent) - 2*rho(agent)*cos(tht(agent))) + 2*mu*cos(alpha(agent) + zeta(agent,rec))))/(4*d(agent,rec)^(2+mu/2)) ...
-                             - (mu*cos(alpha(agent) + zeta(agent,rec))*(2*x(agent)*2*rho(rec)*cos(tht(rec)))*(2+mu/2)*(d^(1+mu/2))*(x(agent)-rho(rec)*cos(tht(rec)))/d(agent,rec))/(4*d(agent,rec)^(2+mu/2))^2) ...
-                             + (((cos(alpha(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + k*(x(agent - rho(rec)*cos(tht(rec))))/d(agent,rec))*(k*cos(tht(rec)) + k*(x(agent - rho(rec)*cos(tht(rec))))/d(agent,rec)) + sin(alpha(agent) + zeta(agent,rec))*(4*k*d(agent,rec) - k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))^2/(2*d(agent,rec))^2))))
-    
+    % for agent = 1:Na
+    %     for rec = 1:Ns
+    %         uxx(agent,rec) = -a(agent)*((-mu*sin(a(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + k*(x(agent) - (rho(rec)*cos(tht(rec)))/d(agent,rec))*(2*x(agent) - 2*rho(agent)*cos(tht(agent))) + 2*mu*cos(alpha(agent) + zeta(agent,rec))))/(4*d(agent,rec)^(2+mu/2)) ...
+    %                          - (mu*cos(alpha(agent) + zeta(agent,rec))*(2*x(agent)*2*rho(rec)*cos(tht(rec)))*(2+mu/2)*(d^(1+mu/2))*(x(agent)-rho(rec)*cos(tht(rec)))/d(agent,rec))/(4*d(agent,rec)^(2+mu/2))^2) ...
+    %                          + (((cos(alpha(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + k*(x(agent - rho(rec)*cos(tht(rec))))/d(agent,rec))*(k*cos(tht(rec)) + k*(x(agent - rho(rec)*cos(tht(rec))))/d(agent,rec)) + sin(alpha(agent) + zeta(agent,rec))*(4*k*d(agent,rec) - k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))^2/(2*d(agent,rec))^2))))
+    % 
 
 
     % update GD parameter(s)
@@ -188,7 +188,7 @@ for t = 1:T
         % grid on;
         % set(gca, 'FontSize', 24)
 
-        xfigure(60606); hold off
+        figure(60606); hold off
         scatter(x,y,'b','LineWidth',4); hold on
         scatter(rho.*cos(tht),rho.*sin(tht),'k','LineWidth',4)
         title("Agent Positions")
