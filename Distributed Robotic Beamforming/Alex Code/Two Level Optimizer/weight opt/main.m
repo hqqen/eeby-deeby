@@ -1,8 +1,8 @@
 clear all; close all;
 % algorithm params
 f0 = 40e6;           % beam freq
-Na = 11;             % num Tx
-Nb = 9;              % num Tx for building signal
+Na = 21;             % num Tx
+Nb = 15;              % num Tx for building signal
 lambda = 3e8/f0;     % wavelength
 d = lambda/2;       % interagent spacing
 
@@ -14,7 +14,7 @@ rhoCh = 3*d/2;
 
 %% build array factor and Tx parameters (one call is plotting, one is to get feasible profile)
 NsCh = 360; % sample 360 points to build complete AF profile
-Ns = 5;    % sample 20 ponts for the algorithm to optimize over
+Ns = 15;    % sample 20 ponts for the algorithm to optimize over
 thetaCh = linspace(0,2*pi,NsCh);
 theta = linspace(0,2*pi,Ns);linspace(0,7*pi/8,Ns);
 r = []; a0 = []; alpha0 = [];
@@ -46,13 +46,13 @@ f = abs(AFd).';
 AFdCh = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,thetaCh);
 fCh = abs(AFdCh).';
 %plot array factor
-figure(1);
-plot(thetaCh,20*log10(fCh)/max(fCh),'r', 'LineWidth', 5); hold on;
-plot(theta,20*log10(f)/max(f),'g', 'LineWidth', 5);
-set(gca,'FontSize',12)
-grid on;
-legend("Full AF", "Sampled AF")
-xlabel("\theta (rad)")
+% figure(1);
+% plot(thetaCh,20*log10(fCh)/max(fCh),'r', 'LineWidth', 5); hold on;
+% plot(theta,20*log10(f)/max(f),'g', 'LineWidth', 5);
+% set(gca,'FontSize',12)
+% grid on;
+% legend("Full AF", "Sampled AF")
+% xlabel("\theta (rad)")
 
 %% get distance to each Rx and set error weights
 rho = [];
@@ -79,7 +79,8 @@ w = w/sum(w);
 % 22.1399925852797	-0.767670315882668	10.9734757583448	19.1015011486771	13.4777007640256	-25.3041198604027	-0.122696101339280	-11.9710705000400	-20.7141045381647	-18.3678663405548	14.9307541992514	34.4468568904083	-27.1031667878491	-18.1868809407198	-18.4288365771352	-19.2356273456258	-11.2512175511393	-18.6687106517977	-2.00333633229531	24.8121470922218	3.72927062183547];
 %% run optimizer
 % first run SBL to prune agents
-KK = Main_SBL(r, f.', Na, theta);
+% KK = Main_SBL(r, f.', Na, theta);
+KK = 0;
 
 % plot Tx/Rx setup
 figure(40);
@@ -94,26 +95,26 @@ grid on
 box on
 
 % plot agent array before pruning
-figure(39);
-scatter(r(1,:),r(2,:),'b','LineWidth',4); hold on;
-title("Agents Before SBL Pruning")
-box on
-xlabel("x(m)")
-ylabel("y(m)")
-set(gca,'FontSize',12)
-grid on
+% figure(39);
+% scatter(r(1,:),r(2,:),'b','LineWidth',4); hold on;
+% title("Agents Before SBL Pruning")
+% box on
+% xlabel("x(m)")
+% ylabel("y(m)")
+% set(gca,'FontSize',12)
+% grid on
 
 % plot the agent array after pruning
-figure(41);
-scatter(r(1,abs(KK)>0),r(2,abs(KK)>0),'b','LineWidth',4); hold on;
-scatter(r(1,abs(KK)==0),r(2,abs(KK)==0),'r','LineWidth',4)
-title("Agents After SBL Pruning")
-legend("Kept Agents", "Pruned Agents")
-xlabel("x(m)")
-ylabel("y(m)")
-box on
-set(gca,'FontSize',12)
-grid on
+% figure(41);
+% scatter(r(1,abs(KK)>0),r(2,abs(KK)>0),'b','LineWidth',4); hold on;
+% scatter(r(1,abs(KK)==0),r(2,abs(KK)==0),'r','LineWidth',4)
+% title("Agents After SBL Pruning")
+% legend("Kept Agents", "Pruned Agents")
+% xlabel("x(m)")
+% ylabel("y(m)")
+% box on
+% set(gca,'FontSize',12)
+% grid on
 
 % rebuild agent array to only have agents which survived pruning
 rPruned = r;r(:, abs(KK) > 0);

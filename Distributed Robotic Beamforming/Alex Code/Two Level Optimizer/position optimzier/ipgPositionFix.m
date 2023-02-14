@@ -99,7 +99,7 @@ for t = 1:T
         % find the rec'd AF and the respective error
         recAF = 0;
         for agent = 1:Na
-            recAF = recAF + a(agent,t)*(u(agent,rec) + 1i*v(agent,rec));
+            recAF = recAF + a(agent)*(u(agent,rec) + 1i*v(agent,rec));
         end
         recAF = abs(recAF);
         recErr = recAF - f(rec);
@@ -107,13 +107,21 @@ for t = 1:T
         gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:,t)'*u(:,rec))*dux(:,rec) + (a(:,t)'*v(:,rec))*dvx(:,rec)));
         gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:,t)'*u(:,rec))*duy(:,rec) + (a(:,t)'*v(:,rec))*dvy(:,rec)));
     end
-    % get 2nd derivaives
+    % get 2nd derivaives of u and v
+    for agent = 1:Na
+        for rec = 1:Ns
+            uxx(agent,rec) = -a(agent)*((-mu*sin(a(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + k*(x(agent) - (rho(rec)*cos(tht(rec)))/d(agent,rec))*(2*x(agent) - 2*rho(agent)*cos(tht(agent))) + 2*mu*cos(alpha(agent) + zeta(agent,rec))))/(4*d(agent,rec)^(2+mu/2)) ...
+                             - (mu*cos(alpha(agent) + zeta(agent,rec))*(2*x(agent)*2*rho(rec)*cos(tht(rec)))*(2+mu/2)*(d^(1+mu/2))*(x(agent)-rho(rec)*cos(tht(rec)))/d(agent,rec))/(4*d(agent,rec)^(2+mu/2))^2) ...
+                             + (((cos(alpha(agent) + zeta(agent,rec))*(k*cos(tht(rec)) + k*(x(agent - rho(rec)*cos(tht(rec))))/d(agent,rec))*(k*cos(tht(rec)) + k*(x(agent - rho(rec)*cos(tht(rec))))/d(agent,rec)) + sin(alpha(agent) + zeta(agent,rec))*(4*k*d(agent,rec) - k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))^2/(2*d(agent,rec))^2))))
+    
+
 
     % update GD parameter(s)
     eps1 = 1/(max(eig(h)) + beta);
     % run GD update
-    K = K - eps1*(h*K+beta*K-eye(2*Na));         % mass update preconditioner (using eqn 5, not 12)
-    grad(:,t) = [sum(Lx,2);sum(Ly,2)];            % agent-wise gradient is summed
+    % K = K - eps1*(h*K+beta*K-eye(2*Na));         % mass update preconditioner (using eqn 5, not 12)
+    K = eye(2*Na);
+    grad(:,t) = [sum(gx,2);sum(gy,2)];            % agent-wise gradient is summed
     g = [x(:);y(:)] - eps2*K*grad(:,t);   % gradient update (eqn 4)
     x(:) = g(1:Na);                            % split gradient update to amplitude and phase
     y(:) = g(Na+1:end);
