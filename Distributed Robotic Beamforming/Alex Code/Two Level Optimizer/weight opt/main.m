@@ -14,7 +14,7 @@ rhoCh = 3*d/2;
 
 %% build array factor and Tx parameters (one call is plotting, one is to get feasible profile)
 NsCh = 360; % sample 360 points to build complete AF profile
-Ns = 5;    % sample 20 ponts for the algorithm to optimize over
+Ns = 9;    % sample 20 ponts for the algorithm to optimize over
 thetaCh = linspace(0,2*pi,NsCh);
 theta = linspace(0,2*pi,Ns);linspace(0,7*pi/8,Ns);
 r = []; a0 = []; alpha0 = [];
