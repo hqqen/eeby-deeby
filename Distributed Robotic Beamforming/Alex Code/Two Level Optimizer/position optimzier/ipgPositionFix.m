@@ -16,8 +16,9 @@ function [amp, alpha, AF, noisyAF] = ipgPhaseMag(T,f,r,rho,tht,a0,alpha0,w,f0)
 
 % setup algorithm parameters
 eps1 = 1e-2; % GD rate for precond matrix
-eps2 = .5;    % parameter GD rate
+eps2 = .25;    % parameter GD rate
 beta = .1;   % stabilization parameter
+delta = .005; %motion penalty coefficient
 
 % build other algorithm parameters
 Na = length(r);     % num agents
@@ -104,10 +105,33 @@ for t = 1:T
         recAF = abs(recAF);
         recErr = recAF - f(rec);
         %  build the actual gradient
-        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*dux(:,rec) + (a(:)'*v(:,rec))*dvx(:,rec))) + .001*eye(Na)*(x - x0);
-        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*duy(:,rec) + (a(:)'*v(:,rec))*dvy(:,rec))) + .001*eye(Na)*(y - y0);
+        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*dux(:,rec) + (a(:)'*v(:,rec))*dvx(:,rec))) + delta*eye(Na)*(x - x0);
+        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*duy(:,rec) + (a(:)'*v(:,rec))*dvy(:,rec))) + delta*eye(Na)*(y - y0);
     end
     % get 2nd derivaives
+    for agent = 1:Na
+        for rec = 1:Ns
+            uxx(agent,rec) = -a(agent)*((-mu*sin(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(x(agent) - rho(rec)*cos(tht(rec)))*d(agent,rec)^-1))*(2*x(agent) - 2*rho(agent)*cos(tht(agent))) + 2*mu*cos(alpha(agent) + zeta(agent,rec)))*(4*d(agent,rec)^(2 + mu/2))...
+                - (mu * cos(alpha(agent) + zeta(agent,rec)) * (2*x(agent) - 2*rho(rec)*cos(tht(rec))) * (2 + mu/2) * d^(1 + mu/2) * (x(agent) - rho(rec)*cos(tht(rec))) * d(agent,rec)^-1)*(4*d(agent,rec)^(2 + mu/2))^-2 ...
+                + ((cos(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))/(2*d(agent,rec))))) ...
+                + sin(alpha(agent) + zeta(agent,rec)) * (4*k*d(agent,rec) - k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))^2/(4*d(agent,rec)^2))*d^(mu/2) ...
+                - sin(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(2*x(agent) + 2*rho(rec)*cos(tht(rec)))/(2*d(agent,rec))))*(mu/2)*(4*d(agent,rec)^(mu/2 - 1)) * (x(agent) - rho(rec)*cos(tht(rec)))*d(agent,rec)^-1)*(d(agent,rec)^(mu/2))^-2);
+            uyy(agent,rec) = -a(agent)*((-mu*sin(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(y(agent) - rho(rec)*sin(tht(rec)))*d(agent,rec)^-1))*(2*x(agent) - 2*rho(agent)*cos(tht(agent))) + 2*mu*cos(alpha(agent) + zeta(agent,rec)))*(4*d(agent,rec)^(2 + mu/2))...
+                - (mu * cos(alpha(agent) + zeta(agent,rec)) * (2*y(agent) - 2*rho(rec)*sin(tht(rec))) * (2 + mu/2) * d^(1 + mu/2) * (y(agent) - rho(rec)*sin(tht(rec))) * d(agent,rec)^-1)*(4*d(agent,rec)^(2 + mu/2))^-2 ...
+                + ((cos(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(2*y(agent) - 2*rho(rec)*sin(tht(rec)))/(2*d(agent,rec))))) ...
+                + sin(alpha(agent) + zeta(agent,rec)) * (4*k*d(agent,rec) - k*(2*y(agent) - 2*rho(rec)*sin(tht(rec)))^2/(4*d(agent,rec)^2))*d^(mu/2) ...
+                - sin(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(2*x(agent) + 2*rho(rec)*cos(tht(rec)))/(2*d(agent,rec))))*(mu/2)*(4*d(agent,rec)^(mu/2 - 1)) * (y(agent) - rho(rec)*sin(tht(rec)))*d(agent,rec)^-1)*(d(agent,rec)^(mu/2))^-2);
+            uxy(agent,rec) = 
+            vxx(agent,rec) = -a(agent)*((-mu*cos(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(x(agent) - rho(rec)*cos(tht(rec)))*d(agent,rec)^-1))*(2*x(agent) - 2*rho(agent)*cos(tht(agent))) + 2*mu*sin(alpha(agent) + zeta(agent,rec)))*(4*d(agent,rec)^(2 + mu/2))...
+                - (mu * sin(alpha(agent) + zeta(agent,rec)) * (2*x(agent) - 2*rho(rec)*cos(tht(rec))) * (2 + mu/2) * d^(1 + mu/2) * (x(agent) - rho(rec)*cos(tht(rec))) * d(agent,rec)^-1)*(4*d(agent,rec)^(2 + mu/2))^-2 ...
+                + ((sin(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))/(2*d(agent,rec))))) ...
+                + cos(alpha(agent) + zeta(agent,rec)) * (4*k*d(agent,rec) - k*(2*x(agent) - 2*rho(rec)*cos(tht(rec)))^2/(4*d(agent,rec)^2))*d^(mu/2) ...
+                - cos(alpha(agent) + zeta(agent,rec)) * (k*cos(tht(rec)) + (k*(2*x(agent) + 2*rho(rec)*cos(tht(rec)))/(2*d(agent,rec))))*(mu/2)*(4*d(agent,rec)^(mu/2 - 1)) * (x(agent) - rho(rec)*cos(tht(rec)))*d(agent,rec)^-1)*(d(agent,rec)^(mu/2))^-2);
+            vyy(agent,rec) = 
+            vxy(agent,rec) = 
+        end
+    end
+
 
     % update GD parameter(s)
     eps1 = 1/(max(eig(h)) + beta);
@@ -209,8 +233,10 @@ grid on
 figure(70707); hold on;
 scatter(x0,y0,'b','LineWidth',4);
 scatter(x,y,'r','LineWidth',4);
+scatter(rho.*cos(tht),rho.*sin(tht), 'k', 'LineWidth', 4)
 title("Agent Positions")
 xlabel("x (m)"); ylabel("y (m)");
 grid on;
+legend("Initial Tx Position", "Final Tx Position", "Rx")
 drawnow
 end

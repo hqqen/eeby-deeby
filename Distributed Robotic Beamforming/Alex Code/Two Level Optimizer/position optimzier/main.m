@@ -1,8 +1,8 @@
 clear all; close all;
 % algorithm params
 f0 = 40e6;           % beam freq
-Na = 15;             % num Tx
-Nb = 7;              % num Tx for building signal
+Na = 21;             % num Tx
+Nb = 15;              % num Tx for building signal
 lambda = 3e8/f0;     % wavelength
 d = lambda/2;       % interagent spacing
 
@@ -14,7 +14,7 @@ rhoCh = 3*d/2;
 
 %% build array factor and Tx parameters (one call is plotting, one is to get feasible profile)
 NsCh = 360; % sample 360 points to build complete AF profile
-Ns = 12;    % sample 20 ponts for the algorithm to optimize over
+Ns = 15;    % sample 20 ponts for the algorithm to optimize over
 thetaCh = linspace(0,2*pi,NsCh);
 theta = linspace(0,7*pi/8,Ns);
 r = []; a0 = []; alpha0 = [];
