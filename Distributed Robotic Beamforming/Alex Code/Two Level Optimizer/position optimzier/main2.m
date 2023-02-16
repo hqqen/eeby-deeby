@@ -15,7 +15,7 @@ rhoCh = 3*d/2;
 %% build array factor and Tx parameters (one call is plotting, one is to get feasible profile)
 NsCh = 360; % sample 360 points to build complete AF profile
 Ns = 4;    % sample 20 ponts for the algorithm to optimize over
-% thetaCh = linspace(0,2*pi,NsCh);
+thetaCh = linspace(0,2*pi,NsCh);
 % theta = linspace(0,7*pi/8,Ns);
 theta = [pi/8, 2*pi/8, 3*pi/8, pi/2];
 r = []; a0 = []; alpha0 = [];
@@ -42,19 +42,19 @@ for i = 1:Nb
     alpha(i) = b(i)*pi/8;
 
 end
-% AFd = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,theta);
-% f = abs(AFd).';
-% % sample the entire array factor
-% AFdCh = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,thetaCh);
-% fCh = abs(AFdCh).';
-% %plot array factor
-% figure(1);
-% plot(thetaCh,20*log10(fCh)/max(fCh),'r', 'LineWidth', 5); hold on;
-% plot(theta,20*log10(f)/max(f),'g', 'LineWidth', 5);
-% set(gca,'FontSize',12)
-% grid on;
-% legend("Full AF", "Sampled AF")
-% xlabel("\theta (rad)")
+AFd = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,theta);
+f = abs(AFd).';
+% sample the entire array factor
+AFdCh = GetArrayFactor(Nb,rb,a,alpha,gamma,mu,nu,rhoCh,thetaCh);
+fCh = abs(AFdCh).';
+%plot array factor
+figure(1);
+plot(thetaCh,20*log10(fCh)/max(fCh),'r', 'LineWidth', 5); hold on;
+plot(theta,20*log10(f)/max(f),'g', 'LineWidth', 5);
+set(gca,'FontSize',12)
+grid on;
+legend("Full AF", "Sampled AF")
+xlabel("\theta (rad)")
 
 %% get distance to each Rx and set error weights
 rho = [];
@@ -103,4 +103,6 @@ alpha0 = zeros(6,1);%angle(KK(abs(KK) > 0));
 
 % then run IPG to further optimize weights
 % ipgPositionFix(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
-ipgPositionFix(2.5e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
+tic
+ipgPositionFix(1e3,f,rPruned,rho,theta,a0,alpha0,w,f0)
+toc

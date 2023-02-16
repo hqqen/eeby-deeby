@@ -131,12 +131,12 @@ for t = 1:T
 %             vxy(agent,rec) = 
 %         end
 %     end
-    ddr = getHessian(k,mu,rho,tht,Na,a,alpha,xTrue,yTrue);
+    h = getHessian(x,y);
 
     % update GD parameter(s)
     eps1 = 1/(max(eig(h)) + beta);
     % run GD update
-    %     K = K - eps1*(h*K+beta*K-eye(2*Na));         % mass update preconditioner (using eqn 5, not 12)
+        K = K - eps1*(h*K+beta*K-eye(2*Na));         % mass update preconditioner (using eqn 5, not 12)
     K = eye(2*Na);
     grad(:,t) = [sum(gx,2);sum(gy,2)];            % agent-wise gradient is summed
     g = [x(:);y(:)] - eps2*K*grad(:,t);   % gradient update (eqn 4)
