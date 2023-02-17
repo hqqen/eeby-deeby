@@ -155,6 +155,7 @@ for t = 1:T
         title('Noisy Beampattern')
         grid on;
         set(gca, 'FontSize', 12);
+        exportgraphics(gcf,'pattern.gif','Append',true);
         hold off;
 
         figure(30303);
@@ -164,6 +165,7 @@ for t = 1:T
         xlabel("t")
         grid on;
         set(gca, 'FontSize', 12)
+        exportgraphics(gcf,'error.gif','Append',true);
 
         % figure(40404);
         % plot(tht,AFDB(:,t), 'g', 'LineWidth', 3); hold on;

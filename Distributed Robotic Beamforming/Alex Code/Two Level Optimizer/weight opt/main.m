@@ -14,6 +14,7 @@ rhoCh = 3*d/2;
 
 %% build array factor and Tx parameters (one call is plotting, one is to get feasible profile)
 NsCh = 360; % sample 360 points to build complete AF profile
+Ns = 5;    % sample 20 ponts for the algorithm to optimize over
 Ns = 9;    % sample 20 ponts for the algorithm to optimize over
 thetaCh = linspace(0,2*pi,NsCh);
 theta = linspace(0,2*pi,Ns);linspace(0,7*pi/8,Ns);
@@ -121,4 +122,4 @@ a0 = 100*rand(Na,1);abs(KK(abs(KK) > 0));
 alpha0 = rand(Na,1);angle(KK(abs(KK) > 0));
 % 
 % % then run IPG to further optimize weights
-ipgPhaseMag(2.5e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
+ipgPhaseMag(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)

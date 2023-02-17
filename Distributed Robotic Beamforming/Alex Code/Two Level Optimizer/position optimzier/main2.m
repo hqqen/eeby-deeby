@@ -104,5 +104,5 @@ alpha0 = zeros(6,1);%angle(KK(abs(KK) > 0));
 % then run IPG to further optimize weights
 % ipgPositionFix(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
 tic
-ipgPositionFix(1e3,f,rPruned,rho,theta,a0,alpha0,w,f0)
+ipgPositionOptHessian(1e3,f,rPruned,rho,theta,a0,alpha0,w,f0)
 toc
