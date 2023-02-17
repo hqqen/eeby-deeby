@@ -167,7 +167,7 @@ for t = 1:T
         sprintf("Algorithm has Diverged!")
         break
     end
-    if ~mod(t,100)
+    if ~mod(t,1)
 
         figure(20202);
         plot(tht, noisyAFDB(:,t), 'g', 'LineWidth', 3); hold on
@@ -208,7 +208,7 @@ for t = 1:T
         figure(60606); hold off
         scatter(x,y,'b','LineWidth',4); hold on
         scatter(rho.*cos(tht),rho.*sin(tht),'k','LineWidth',4)
-        title("Agent Positions")
+        title("Agent Positions at  t = " + t)
         xlabel("x (m)"); ylabel("y (m)");
         %         exportgraphics(gcf,'agentMovementNoSBL.gif','Append',true);
         grid on

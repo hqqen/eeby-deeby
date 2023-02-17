@@ -172,7 +172,7 @@ for t = 1:T
     times(t) = toc;
     if ~mod(t,10)
 
-        fprintf("Average time taken over the past 10 steps: " + movmean(times,10) + " sec")
+        disp(sprintf("Average time taken over the past 10 steps: " + string(sum(times(t-9:t))/10) + " sec \n"))
 
         figure(20202);
         plot(tht, noisyAFDB(:,t), 'g', 'LineWidth', 3); hold on
