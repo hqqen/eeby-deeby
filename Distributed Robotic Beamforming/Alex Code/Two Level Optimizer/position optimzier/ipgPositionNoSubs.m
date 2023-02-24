@@ -107,8 +107,8 @@ for t = 1:T
         recAF = abs(recAF);
         recErr = recAF - f(rec);
         %  build the actual gradient
-        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*dux(:,rec) + (a(:)'*v(:,rec))*dvx(:,rec))) + delta*eye(Na)*(x - x0);
-        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*duy(:,rec) + (a(:)'*v(:,rec))*dvy(:,rec))) + delta*eye(Na)*(y - y0);
+        gx(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*dux(:,rec) + (a(:)'*v(:,rec))*dvx(:,rec)));% + delta*eye(Na)*(x - x0);
+        gy(:,rec) = w(rec,:)*((recErr/recAF)*((a(:)'*u(:,rec))*duy(:,rec) + (a(:)'*v(:,rec))*dvy(:,rec)));% + delta*eye(Na)*(y - y0);
     end
     % get 2nd derivaives
 %     for agent = 1:Na
@@ -140,7 +140,7 @@ for t = 1:T
     % run GD update
         K = K - eps1*(h*K+beta*K-eye(2*Na));         % mass update preconditioner (using eqn 5, not 12)
     K = eye(2*Na);
-    grad(:,t) = [sum(gx,2);sum(gy,2)];            % agent-wise gradient is summed
+    grad(:,t) = [sum(gx,2);sum(gy,2)] + delta*abs([x-x0;y-y0]) + ;            % agent-wise gradient is summed
     g = [x(:);y(:)] - eps2*K*grad(:,t);   % gradient update (eqn 4)
     x(:) = g(1:Na);                            % split gradient update to amplitude and phase
     y(:) = g(Na+1:end);

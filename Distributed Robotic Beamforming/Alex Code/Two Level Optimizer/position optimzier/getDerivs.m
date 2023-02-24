@@ -1,6 +1,6 @@
 function ddr = getDerivs(k,mu,rho,tht,Na,a,alpha,xTrue,yTrue)
 %% setup symvars
-syms x y [Na 1] real
+syms x y x0 y0 [Na 1] real
 sympref('FloatingPointOutput', true); % this should go in the file invoking this, not here!
 %% reshape inputs
 Ns = numel(rho);
@@ -43,7 +43,7 @@ end
 % ddr = subs(jacobian(sum(dr,2),r),[x,y],[xTrue,yTrue]);
 fprintf("Finding Hessian...\n")
 tic
-ddr = matlabFunction(jacobian(sum(dr,2),r),'Optimize',false,'Vars',{x,y},'file','getHessianOpt');
+sizeddr = matlabFunction(jacobian(sum(dr,2),r),'Optimize',false,'Vars',{x,y},'file','getHessianOpt');
 % ddr = double(subs(jacobian(sum(dr,2),r),[x,y],[xTrue,yTrue]));
 fprintf("Hessian Found! \n")
 toc

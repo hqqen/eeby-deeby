@@ -1,9 +1,12 @@
+clear all;
 Na = 6; Ns = 4;
 %% setup symvars
-syms x y a alpha [Na 1] real
+syms x y a alpha x0 y0 [Na 1] real
 syms rho tht [Ns 1] real
+syms rMin eps1 eps2 real
 mu = 2; k = (2*pi)/(3e8/4e7);
 sympref('FloatingPointOutput', true); % this should go in the file invoking this, not here!
+digits(16)
 %% reshape inputs
 Ns = numel(rho);
 % Na = numel(xTrue);
@@ -23,7 +26,20 @@ u = sym(zeros(Na,Ns));
 v = sym(zeros(Na,Ns));
 dr = sym(zeros(2*Na,Ns));
 ys = sym(zeros(Ns,1));
+dAgent = sym(zeros(Na,Na));
+p = sym(zeros(Na,Na));
 
+%% build array of distance based penalties 
+% need to build in travel dist penalties and inter agent spacing penalties
+r = [x,y]; r0 = [x0, y0];
+for i = 1:Na
+    for j = 1:Na
+        % dAgent(i,j) = eps1*norm(r(i,:) - r(j,:))^2; % travel dist
+        pAgent(i,j) = eps2*log(norm(r(i,:) - r(j,:)) - rMin); % interagent spacing
+        pAgent(i,i) = eps1*norm(r(i,:) - r0(i,:)); % travel distance
+    end
+end
+pAgent = sum(pAgent,2); % sum total of added cost at each agent
 
 %% build terms for the first derivative
 r = [x;y];
@@ -41,11 +57,18 @@ for i = 1:max(size(rho))
     % given dimension)
     dr(:,i) = sum((1/ys(i))*(a.'*u(:,i)*jacobian(u(:,i),r) + a.'*v(:,i)*jacobian(v(:,i),r)).',2);
 end
+
+%% sum cost for each coordiante (i.e get a 2Na*1 array)
+% now add the distance traveled penalties and interagent spacing
+dp = sum(jacobian(pAgent,r).',2);
+% dp = sign(dp).*min(abs(dp),10);
+dr = sum(dr,2) + dp;
 %% get second derivative
 % ddr = subs(jacobian(sum(dr,2),r),[x,y],[xTrue,yTrue]);
 fprintf("Finding Hessian...\n")
 tic
-ddr = matlabFunction(jacobian(sum(dr,2),r),'Optimize',false,'Vars',{x,y,a,alpha,rho,tht},'file','getHessianNoSubs');
+ddr = matlabFunction(vpa(jacobian(dr,r)),'Optimize',false,'Vars',{x,y,x0,y0,a,alpha,rho,tht,rMin,eps1,eps2},'file','getHessianFullCost');
+matlabFunction(vpa(dp),'Vars',{r,r0,rMin,eps1,eps2},'file','getCostDerivs','Optimize',false)
 % ddr = double(subs(jacobian(sum(dr,2),r),[x,y],[xTrue,yTrue]));
 fprintf("Hessian Found! \n")
 toc

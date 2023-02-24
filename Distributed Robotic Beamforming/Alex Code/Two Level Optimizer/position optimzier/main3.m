@@ -29,7 +29,7 @@ for i = 1:Na
     % alpha0(i) = c(i)*pi/8;
 
 end
-r = [0:5; zeros(1,6)];
+r = [0:5; ones(1,6)];
 % make intial amplitude and phase guess
 a0 = 100*rand(Na,1);
 alpha0 = rand(Na,1);
@@ -104,5 +104,5 @@ alpha0 = zeros(6,1);%angle(KK(abs(KK) > 0));
 % then run IPG to further optimize weights
 % ipgPositionFix(1e4,f,rPruned,rho,theta,a0,alpha0,w,f0)
 tic
-times = ipgPositionNoSubs(1e3,f,rPruned,rho,theta,a0,alpha0,w,f0)
+times = ipgPositionFullCost(1e3,f,rPruned,rho,theta,a0,alpha0,w,f0)
 toc
