@@ -1,0 +1,151 @@
+{
+  "main": {
+    "id": "4745f4453781149b",
+    "type": "split",
+    "children": [
+      {
+        "id": "2e08497837e61bae",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "667fec1d41ee9458",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "Safety_Barrier_Certificates_for_Collisions-Free_Multirobot_Systems.pdf"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "76ba481dbaa5791d",
+    "type": "split",
+    "children": [
+      {
+        "id": "87b5626160b78b55",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b6bef6528e8f0559",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "2c7ac3c15f9af10f",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "ee404fd841b517f8",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "cfd94710adadf830",
+    "type": "split",
+    "children": [
+      {
+        "id": "2526e9b5ff62dd95",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b10ae22dd7a93efa",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Safety_Barrier_Certificates_for_Collisions-Free_Multirobot_Systems.pdf",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "676237641bcac384",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Safety_Barrier_Certificates_for_Collisions-Free_Multirobot_Systems.pdf",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "c7bb734f54dbbb29",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "e669cb9c6ce11b90",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Safety_Barrier_Certificates_for_Collisions-Free_Multirobot_Systems.pdf"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "667fec1d41ee9458",
+  "lastOpenFiles": [
+    "Safety_Barrier_Certificates_for_Collisions-Free_Multirobot_Systems.pdf"
+  ]
+}
